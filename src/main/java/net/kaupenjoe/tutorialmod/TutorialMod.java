@@ -41,14 +41,11 @@ public class TutorialMod implements ModInitializer {
 	public static int getStat(CommandContext<ServerCommandSource> context, String stat, int amount) {
 		Stats plrStats = getPlrStats(context);
 
-		switch (stat){
-			case "strength":
-				return plrStats.getStrength();
-			case "dexterity":
-				return 5;
-			default:
-				return 0;
-		}
+        return switch (stat) {
+            case "strength" -> plrStats.getStrength();
+            case "dexterity" -> 5;
+            default -> 0;
+        };
 	}
 		@Override
 	public void onInitialize() {
