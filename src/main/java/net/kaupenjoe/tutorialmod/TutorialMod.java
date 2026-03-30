@@ -32,10 +32,22 @@ public class TutorialMod implements ModInitializer {
 	public static void setStat(CommandContext<ServerCommandSource> context, String stat, int amount) {
 		Stats plrStats = getPlrStats(context);
 
-		switch (stat.toLowerCase()){
+		switch (stat){
 			case "strength":
 				plrStats.setStrength(amount);
 				break;
+		}
+	}
+	public static int getStat(CommandContext<ServerCommandSource> context, String stat, int amount) {
+		Stats plrStats = getPlrStats(context);
+
+		switch (stat){
+			case "strength":
+				return plrStats.getStrength();
+			case "dexterity":
+				return 5;
+			default:
+				return 0;
 		}
 	}
 		@Override
