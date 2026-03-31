@@ -7,6 +7,7 @@ import net.fabricmc.api.ModInitializer;
 
 //import net.kaupenjoe.tutorialmod.items.ModItems;
 import net.kaupenjoe.tutorialmod.Player.Stats;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.server.command.ServerCommandSource;
 import org.slf4j.Logger;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -38,7 +39,7 @@ public class TutorialMod implements ModInitializer {
 				break;
 		}
 	}
-	public static int getStat(CommandContext<ServerCommandSource> context, String stat, int amount) {
+	public static int getStat(CommandContext<ServerCommandSource> context, String stat) {
 		Stats plrStats = getPlrStats(context);
 
         return switch (stat) {
@@ -47,80 +48,72 @@ public class TutorialMod implements ModInitializer {
             default -> 0;
         };
 	}
+	public static int doRoll(CommandContext<ServerCommandSource> context, String modifier, String label){
+		int baseRoll = (int)(Math.random() * 20) + 1;
+		Stats plrStats = getPlrStats(context);
+
+		int mod = switch (modifier){
+			case "strength" -> plrStats.getStrength();
+			case "dexterity" -> 5;
+			default -> throw new IllegalStateException("Unexpected value: " + modifier);
+        };
+
+		int total = baseRoll + mod;
+		context.getSource().sendFeedback(
+				() -> Text.literal(label + " " + baseRoll+ " + "+ mod + " = "+ total),
+				false
+		);
+
+		return total;
+	}
 		@Override
 	public void onInitialize() {
-		System.out.println("MY MOD IS RUNNING");
 //		ModItems.registerModItems();
-		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-			System.out.println("REGISTERING COMMAND");
-
-			dispatcher.register(CommandManager.literal("roll")
-				.then(CommandManager.literal("attack")
-					.then(CommandManager.argument("modifier", IntegerArgumentType.integer(-10,20))
+			CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+				dispatcher.register(CommandManager.literal("roll")
+					.then(CommandManager.literal("attack")
 						.executes(context -> {
-							Stats plrStats = getPlrStats(context);
-							int strMod = plrStats.getStrength();
-							int roll = (int)(Math.random() * 20)+1;
-							int total = roll + strMod;
-							context.getSource().sendFeedback(
-									() -> Text.literal("Attack Roll: " + roll + " + " + strMod + " = " + total),
-									false
-							);
-							return 1;
-						})
-					)
-					.executes(context -> {
-						int roll = (int)(Math.random() * 20) + 1;
 
-						context.getSource().sendFeedback(
-								() -> Text.literal("Attack Roll: " + roll),
-								false
-						);
-
-						return 1;
-					})
-				)
-				.then(CommandManager.literal("skill")
-					.then(CommandManager.argument("modifier", IntegerArgumentType.integer())
-						.executes(context -> {
-							int roll = (int)(Math.random() * 20) + 1;
-							int modifier = IntegerArgumentType.getInteger(context, "modifier");
-							int total = roll + modifier;
-
-							context.getSource().sendFeedback(
-									() -> Text.literal("Skill Check: " + roll + " + " + modifier + " = " + total),
-									false
-							);
+							int roll = doRoll(context,"strength","Attack Roll: ");
 
 							return 1;
 						})
 					)
-					.executes(context -> {
-						int roll = (int)(Math.random() * 20) + 1;
+					.then(CommandManager.literal("skill")
+						.executes(context -> {
 
-						context.getSource().sendFeedback(
-							() -> Text.literal("Skill Check: " + roll),
-							false
-						);
+							int roll = doRoll(context, "strength","Skill Check: ");
 
-						return 1;
-					})
-				)
-			);
+							return 1;
+						})
+					)
+				);
 			dispatcher.register(CommandManager.literal("stat")
-				.then(CommandManager.argument("statName", StringArgumentType.string())
-					.then(CommandManager.argument("newAmount", IntegerArgumentType.integer())
-						.executes(context -> {
-							String statToChange = StringArgumentType.getString(context,"statName").toLowerCase();
-							int amountTo = IntegerArgumentType.getInteger(context,"newAmount");
-							Stats plrStats = getPlrStats(context);
+				.then(CommandManager.literal("strength")
+						.then(CommandManager.literal("set")
+							.then(CommandManager.argument("amount",IntegerArgumentType.integer(0,20))
+								.executes(context -> {
+									int Amount = IntegerArgumentType.getInteger(context,"amount");
+									setStat(context,"strength",Amount);
+									context.getSource().sendFeedback(
+											() -> Text.literal("You have set your strength to " + Amount ),
+											false
+									);
+									return 1;
+								}))
+						)
+						.then(CommandManager.literal("get")
+								.executes(context -> {
+									int Strength = getStat(context,"strength");
+									context.getSource().sendFeedback(
+											() -> Text.literal("Your strength is " + Strength),
+											false
+									);
+									return 1;
+								}))
 
-
-							return  1;
-						})
 					)
-				)
-			);
+				);
 		});
 	}
 }
