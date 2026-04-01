@@ -2,10 +2,9 @@
 	"schemaVersion": 1,
 	"id": "dndjjk",
 	"version": "${version}",
-	"name": "Tutorial Mod",
-	"description": "Tutorial Mod by Kaupenjoe for YouTube",
+	"name": "Jujutsu Kaisen DnD Edition",
+	"description": "My First Mod",
 	"authors": [
-		"Kaupenjoe!",
 		"OskerGames"
 	],
 	"contact": {

@@ -9,6 +9,7 @@ import net.kaupenjoe.tutorialmod.item.ModItems;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.CommandManager;
@@ -17,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 
@@ -25,8 +27,9 @@ public class TutorialMod implements ModInitializer {
 	public static final Map<UUID, Stats> PLAYER_STATS = new HashMap<>();
 	public static final String MOD_ID = "dndjjk";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+
 	public static Stats getPlrStats(CommandContext<ServerCommandSource> context){
-		UUID uuid = context.getSource().getPlayer().getUuid();
+		UUID uuid = Objects.requireNonNull(context.getSource().getPlayer()).getUuid();
 		Stats plrStats = PLAYER_STATS.get(uuid);
 		if(plrStats == null){
 			plrStats = new Stats(5,5,5,1);
@@ -110,6 +113,24 @@ public class TutorialMod implements ModInitializer {
 				.then(CommandManager.literal("attack")
 					.executes(context -> {
 							int roll = doRoll(context,"strength","Attack Roll: ");
+							ServerCommandSource source = context.getSource();
+
+							source.sendFeedback(()->Text.literal("Attempting to attack Osker. Their AC is 13"),false);
+
+							source.sendFeedback(()->Text.literal("You got "+roll),false);
+
+							if(roll>=12){
+								source.sendFeedback(
+										()->Text.literal("You hit Osker dealing "+ (roll+2)+ "damage"),
+										false
+								);
+							}else{
+								source.sendFeedback(
+										()->Text.literal("You miss"),
+										false
+								);
+							}
+
 							return 1;
 					})
 				)
