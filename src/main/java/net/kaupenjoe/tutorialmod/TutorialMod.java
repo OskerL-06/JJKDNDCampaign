@@ -1,15 +1,11 @@
 package net.kaupenjoe.tutorialmod;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ModInitializer;
 
-//import net.kaupenjoe.tutorialmod.items.ModItems;
 import net.kaupenjoe.tutorialmod.Player.Stats;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.entity.attribute.EntityAttribute;
+import net.kaupenjoe.tutorialmod.item.ModItems;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -31,21 +27,13 @@ public class TutorialMod implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static Stats getPlrStats(CommandContext<ServerCommandSource> context){
 		UUID uuid = context.getSource().getPlayer().getUuid();
-
-        return PLAYER_STATS.computeIfAbsent(uuid, k -> new Stats(5,5,5,1));
-	}
-	public static void setStat(CommandContext<ServerCommandSource> context, String stat, int amount) {
-		Stats plrStats = getPlrStats(context);
-
-		switch (stat){
-			case "strength":
-				plrStats.setStrength(amount);
-				break;
-			case "constitution":
-				plrStats.setConstitution(amount);
-				break;
-
+		Stats plrStats = PLAYER_STATS.get(uuid);
+		if(plrStats == null){
+			plrStats = new Stats(5,5,5,1);
+			applyMaxHP(context.getSource().getPlayer(), plrStats.getMaxHP());
+			PLAYER_STATS.put(uuid,plrStats);
 		}
+        return plrStats;
 	}
 	public static int getStat(CommandContext<ServerCommandSource> context, String stat) {
 		Stats plrStats = getPlrStats(context);
@@ -74,12 +62,6 @@ public class TutorialMod implements ModInitializer {
 
 		return total;
 	}
-	public static void setStat(CommandContext<ServerCommandSource> context, int stat, int amount) {
-		Stats plrStats = getPlrStats(context);
-
-
-
-	}
 	public static int doRoll(CommandContext<ServerCommandSource> context, int modifier, String label){
 		int baseRoll = (int)(Math.random() * 20) + 1;
 		Stats plrStats = getPlrStats(context);
@@ -98,90 +80,89 @@ public class TutorialMod implements ModInitializer {
 			attr.setBaseValue(hp);
 		}
 	}
-	public static void applyMaxHP(ClientPlayerEntity player, int hp){
-		var attr = player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
-		if( attr!=null){
-			attr.setBaseValue(hp);
-		}
-	}
-
 	@Override
 	public void onInitialize() {
-//		ModItems.registerModItems();
-			CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-				dispatcher.register(CommandManager.literal("update")
-						.executes(context -> {
-							Stats plrStats = getPlrStats(context);
-							ServerPlayerEntity player = context.getSource().getPlayer();
-							int HP = plrStats.getMaxHP() > 0? plrStats.getMaxHP():  plrStats.intalizeMaxHp();
-                            assert player != null;
-                            TutorialMod.applyMaxHP(player,HP);
-							player.sendMessage(
-									Text.of("HP set to" + HP)
-							);
-							return 1;
-						})
-				);
-				dispatcher.register(CommandManager.literal("roll")
-					.then(CommandManager.literal("attack")
-						.executes(context -> {
+		ModItems.registerModItems();
 
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+			dispatcher.register(CommandManager.literal("levelup")
+					.executes(context -> {
+						Stats plrStats = getPlrStats(context);
+						plrStats.levelUp(context);
+						return 1;
+					})
+			);
+			dispatcher.register(CommandManager.literal("update")
+					.executes(context -> {
+						Stats plrStats = getPlrStats(context);
+						ServerPlayerEntity player = context.getSource().getPlayer();
+						int baseHP = plrStats.getMaxHP();
+						int HP = baseHP > 0? baseHP:  plrStats.calculateMaxHp();
+                           assert player != null;
+                           TutorialMod.applyMaxHP(player,HP);
+						player.sendMessage(
+								Text.of("HP set to" + HP)
+						);
+						return 1;
+					})
+			);
+			dispatcher.register(CommandManager.literal("roll")
+				.then(CommandManager.literal("attack")
+					.executes(context -> {
 							int roll = doRoll(context,"strength","Attack Roll: ");
-
 							return 1;
-						})
-					)
-					.then(CommandManager.literal("skill")
+					})
+				)
+				.then(CommandManager.literal("skill")
 						.executes(context -> {
 
-							int roll = doRoll(context, "strength","Skill Check: ");
-
+						int roll = doRoll(context, "strength","Skill Check: ");
 							return 1;
-						})
+					})
+				)
+			);
+		dispatcher.register(CommandManager.literal("stat")
+			.then(CommandManager.literal("strength")
+				.then(CommandManager.literal("set")
+					.then(CommandManager.argument("amount",IntegerArgumentType.integer(0,20))
+							.executes(context -> {
+								int Amount = IntegerArgumentType.getInteger(context,"amount");
+								Stats plrStats = getPlrStats(context);
+								plrStats.setStrength(Amount);
+								context.getSource().sendFeedback(
+										() -> Text.literal("You have set your strength to " + Amount ),
+										false
+								);
+								return 1;
+							}))
 					)
-				);
-			dispatcher.register(CommandManager.literal("stat")
-				.then(CommandManager.literal("strength")
+					.then(CommandManager.literal("get")
+							.executes(context -> {
+								context.getSource().sendFeedback(
+										() -> Text.literal("Your strength is " + getPlrStats(context).getStrength()),
+										false
+								);
+								return 1;
+							}))
+				)
+					.then(CommandManager.literal("constitution")
 						.then(CommandManager.literal("set")
 							.then(CommandManager.argument("amount",IntegerArgumentType.integer(0,20))
 								.executes(context -> {
 									int Amount = IntegerArgumentType.getInteger(context,"amount");
-									Stats plrStats = getPlrStats(context);
-									setStat(context,plrStats.getStrength(),Amount);
-									context.getSource().sendFeedback(
-											() -> Text.literal("You have set your strength to " + Amount ),
+
+									getPlrStats(context).setConstitution(Amount);
+										context.getSource().sendFeedback(
+											() -> Text.literal("You have set your constitution to " + Amount ),
 											false
-									);
-									return 1;
-								}))
-						)
-						.then(CommandManager.literal("get")
-								.executes(context -> {
-									context.getSource().sendFeedback(
-											() -> Text.literal("Your strength is " + getStat(context,"strength")),
-											false
-									);
-									return 1;
-								}))
-					)
-							.then(CommandManager.literal("constitution")
-									.then(CommandManager.literal("set")
-											.then(CommandManager.argument("amount",IntegerArgumentType.integer(0,20))
-													.executes(context -> {
-														int Amount = IntegerArgumentType.getInteger(context,"amount");
-														Stats plrStats = getPlrStats(context);
-														setStat(context,plrStats.getConstitution(),Amount);
-														context.getSource().sendFeedback(
-																() -> Text.literal("You have set your constitution to " + Amount ),
-																false
-														);
-														return 1;
-													}))
-									)
+											);
+											return 1;
+										}))
+								)
 									.then(CommandManager.literal("get")
 											.executes(context -> {
 												context.getSource().sendFeedback(
-														() -> Text.literal("Your constitution is " + getStat(context,"constitution")),
+														() -> Text.literal("Your constitution is " + getPlrStats(context).getConstitution()),
 														false
 												);
 												return 1;

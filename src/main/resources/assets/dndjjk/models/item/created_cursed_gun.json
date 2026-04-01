@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "dndjjk:item/created_cursed_gun"
+  }
+}
