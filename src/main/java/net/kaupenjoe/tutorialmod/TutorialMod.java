@@ -45,6 +45,17 @@ public class TutorialMod implements ModInitializer {
 		}
         return plrStats;
 	}
+
+	public static Stats getPlrStats(ServerCommandSource context){
+		UUID uuid = Objects.requireNonNull(context.getPlayer()).getUuid();
+		Stats plrStats = PLAYER_STATS.get(uuid);
+		if(plrStats == null){
+			plrStats = new Stats(5,5,5,1);
+			applyMaxHP(context.getPlayer(), plrStats.getMaxHP());
+			PLAYER_STATS.put(uuid,plrStats);
+		}
+		return plrStats;
+	}
 	public static int getStat(CommandContext<ServerCommandSource> context, String stat) {
 		Stats plrStats = getPlrStats(context);
 
@@ -67,6 +78,25 @@ public class TutorialMod implements ModInitializer {
 
 		int total = baseRoll + mod;
 		context.getSource().sendFeedback(
+				() -> Text.literal(label + " " + baseRoll+ " + "+ mod + " = "+ total),
+				false
+		);
+
+		return total;
+	}
+
+	public static int doRoll(ServerCommandSource context, String modifier, String label){
+		int baseRoll = (int)(Math.random() * 20) + 1;
+		Stats plrStats = getPlrStats(context);
+
+		int mod = switch (modifier){
+			case "strength" -> plrStats.getStrength();
+			case "dexterity" -> 5;
+			default -> throw new IllegalStateException("Unexpected value: " + modifier);
+		};
+
+		int total = baseRoll + mod;
+		context.sendFeedback(
 				() -> Text.literal(label + " " + baseRoll+ " + "+ mod + " = "+ total),
 				false
 		);
@@ -102,8 +132,8 @@ public class TutorialMod implements ModInitializer {
 					player.sendMessage(Text.literal(player.getName().getString()+"(You) attack a "+(entity.getName().getString())));
 					entity.damage(player.getDamageSources().playerAttack(player),(float)2.15);
 
-					int roll = doRoll(context,"strength","Attack Roll: ");
-					ServerCommandSource source = context.getSource();
+					int roll = doRoll(player.getCommandSource(),"strength","Attack Roll: ");
+					ServerCommandSource source = player.getCommandSource();
 
 					source.sendFeedback(()->Text.literal("Attempting to attack Osker. Their AC is 13"),false);
 
@@ -120,8 +150,6 @@ public class TutorialMod implements ModInitializer {
 								false
 						);
 					}
-
-					return 1;
 					return ActionResult.SUCCESS;
 				}
 
