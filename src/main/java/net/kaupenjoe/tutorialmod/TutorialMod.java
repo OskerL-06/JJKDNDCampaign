@@ -4,11 +4,18 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.kaupenjoe.tutorialmod.Player.Stats;
 import net.kaupenjoe.tutorialmod.item.ModItems;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageSources;
+import net.minecraft.entity.damage.DamageType;
+import net.minecraft.entity.damage.DamageTypes;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.ActionResult;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -47,6 +54,7 @@ public class TutorialMod implements ModInitializer {
             default -> 0;
         };
 	}
+
 	public static int doRoll(CommandContext<ServerCommandSource> context, String modifier, String label){
 		int baseRoll = (int)(Math.random() * 20) + 1;
 		Stats plrStats = getPlrStats(context);
@@ -83,9 +91,41 @@ public class TutorialMod implements ModInitializer {
 			attr.setBaseValue(hp);
 		}
 	}
+
+
 	@Override
 	public void onInitialize() {
 		ModItems.registerModItems();
+
+		AttackEntityCallback.EVENT.register(
+				(player, world, hand, entity, hitResult) -> {
+					player.sendMessage(Text.literal(player.getName().getString()+"(You) attack a "+(entity.getName().getString())));
+					entity.damage(player.getDamageSources().playerAttack(player),(float)2.15);
+
+					int roll = doRoll(context,"strength","Attack Roll: ");
+					ServerCommandSource source = context.getSource();
+
+					source.sendFeedback(()->Text.literal("Attempting to attack Osker. Their AC is 13"),false);
+
+					source.sendFeedback(()->Text.literal("You got "+roll),false);
+
+					if(roll>=12){
+						source.sendFeedback(
+								()->Text.literal("You hit Osker dealing "+ (roll+2)+ "damage"),
+								false
+						);
+					}else{
+						source.sendFeedback(
+								()->Text.literal("You miss"),
+								false
+						);
+					}
+
+					return 1;
+					return ActionResult.SUCCESS;
+				}
+
+				);
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(CommandManager.literal("levelup")
