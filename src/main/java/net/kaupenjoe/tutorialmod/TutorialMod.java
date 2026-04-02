@@ -5,18 +5,17 @@ import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
+import net.kaupenjoe.tutorialmod.DnDSystem.Dice;
 import net.kaupenjoe.tutorialmod.Player.Stats;
 import net.kaupenjoe.tutorialmod.item.ModItems;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageSources;
-import net.minecraft.entity.damage.DamageType;
-import net.minecraft.entity.damage.DamageTypes;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.world.World;
 import org.slf4j.Logger;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.CommandManager;
@@ -44,6 +43,18 @@ public class TutorialMod implements ModInitializer {
 			PLAYER_STATS.put(uuid,plrStats);
 		}
         return plrStats;
+	}
+
+
+	public static Stats getPlrStats(PlayerEntity player){
+		UUID uuid = Objects.requireNonNull(player).getUuid();
+		Stats plrStats = PLAYER_STATS.get(uuid);
+		if(plrStats == null){
+			plrStats = new Stats(5,5,5,1);
+			applyMaxHP(player, plrStats.getMaxHP());
+			PLAYER_STATS.put(uuid,plrStats);
+		}
+		return plrStats;
 	}
 
 	public static Stats getPlrStats(ServerCommandSource context){
@@ -103,6 +114,22 @@ public class TutorialMod implements ModInitializer {
 
 		return total;
 	}
+
+
+	public static int doRoll(PlayerEntity player, Stats.StatType modifier, String label){
+		int baseRoll = (int)(Math.random() * 20) + 1;
+		Stats plrStats = getPlrStats(player);
+
+		int mod = plrStats.getModifier(modifier);
+
+		int total = baseRoll + mod;
+		player.sendMessage(
+				Text.literal(label + " " + baseRoll+ " + "+ mod + " = "+ total),
+				false
+		);
+
+		return total;
+	}
 	public static int doRoll(CommandContext<ServerCommandSource> context, int modifier, String label){
 		int baseRoll = (int)(Math.random() * 20) + 1;
 		Stats plrStats = getPlrStats(context);
@@ -121,6 +148,42 @@ public class TutorialMod implements ModInitializer {
 			attr.setBaseValue(hp);
 		}
 	}
+	public static void applyMaxHP(PlayerEntity player, int hp){
+		var attr = player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
+		if( attr!=null){
+			attr.setBaseValue(hp);
+		}
+	}
+
+	public static ActionResult attack(PlayerEntity player, Entity target, World world){
+		if(!(target instanceof LivingEntity)) return ActionResult.PASS;
+		player.sendMessage(Text.literal(player.getName().getString()+"(You) attack a "+(target.getName().getString())));
+		System.out.println(world.isClient);
+		Stats plrStats = getPlrStats(player);
+		int strMod = plrStats.getModifier(Stats.StatType.STRENGTH);
+		int roll = Dice.rollD20(strMod);
+//		player.sendMessage(Text.literal("Attack Roll: "+roll));
+		player.sendMessage(Text.literal("Attempting to attack Osker. Their AC is 13"),false);
+
+		player.sendMessage(Text.literal("You got "+roll),false);
+
+		if(roll>=12){
+			int dmg = Dice.rollD6(strMod);
+			player.sendMessage(
+					Text.literal("You hit "+target.getName().getString()+" dealing "+ (dmg)+ "damage"),
+					false
+			);
+			target.damage(player.getDamageSources().playerAttack(player),(float)dmg);
+			return ActionResult.SUCCESS;
+		}else{
+			player.sendMessage(
+					Text.literal("You miss"),
+					false
+			);
+			return ActionResult.FAIL;
+		}
+
+	}
 
 
 	@Override
@@ -128,30 +191,8 @@ public class TutorialMod implements ModInitializer {
 		ModItems.registerModItems();
 
 		AttackEntityCallback.EVENT.register(
-				(player, world, hand, entity, hitResult) -> {
-					player.sendMessage(Text.literal(player.getName().getString()+"(You) attack a "+(entity.getName().getString())));
-					entity.damage(player.getDamageSources().playerAttack(player),(float)2.15);
-
-					int roll = doRoll(player.getCommandSource(),"strength","Attack Roll: ");
-					ServerCommandSource source = player.getCommandSource();
-
-					source.sendFeedback(()->Text.literal("Attempting to attack Osker. Their AC is 13"),false);
-
-					source.sendFeedback(()->Text.literal("You got "+roll),false);
-
-					if(roll>=12){
-						source.sendFeedback(
-								()->Text.literal("You hit Osker dealing "+ (roll+2)+ "damage"),
-								false
-						);
-					}else{
-						source.sendFeedback(
-								()->Text.literal("You miss"),
-								false
-						);
-					}
-					return ActionResult.SUCCESS;
-				}
+				(player, world, hand, entity, hitResult)
+						-> attack(player,entity,world)
 
 				);
 
@@ -206,7 +247,9 @@ public class TutorialMod implements ModInitializer {
 						.executes(context -> {
 
 						int roll = doRoll(context, "strength","Skill Check: ");
-							return 1;
+						context.getSource().sendFeedback(
+								()-> Text.literal("You got "+roll),false);
+						return 1;
 					})
 				)
 			);
