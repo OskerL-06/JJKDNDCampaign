@@ -9,6 +9,7 @@ import net.kaupenjoe.tutorialmod.DnDSystem.Dice;
 import net.kaupenjoe.tutorialmod.Player.Stats;
 import net.kaupenjoe.tutorialmod.item.ModItems;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
@@ -31,6 +32,9 @@ import java.util.UUID;
 
 public class TutorialMod implements ModInitializer {
 	public static final Map<UUID, Stats> PLAYER_STATS = new HashMap<>();
+	public static final Map<EntityType,Integer> ENTITY_AC = new HashMap<>();
+
+
 	public static final String MOD_ID = "dndjjk";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
@@ -77,6 +81,17 @@ public class TutorialMod implements ModInitializer {
         };
 	}
 
+	public static int getStat(CommandContext<ServerCommandSource> context, Stats.StatType stat) {
+		Stats plrStats = getPlrStats(context);
+
+		return  plrStats.getStat(stat);
+	}
+
+	public static void setStat(CommandContext<ServerCommandSource> context, Stats.StatType stat,int amount) {
+		Stats plrStats = getPlrStats(context);
+
+		plrStats.setStat(stat,amount);
+	}
 	public static int doRoll(CommandContext<ServerCommandSource> context, String modifier, String label){
 		int baseRoll = (int)(Math.random() * 20) + 1;
 		Stats plrStats = getPlrStats(context);
@@ -156,24 +171,36 @@ public class TutorialMod implements ModInitializer {
 	}
 
 	public static ActionResult attack(PlayerEntity player, Entity target, World world){
+
 		if(!(target instanceof LivingEntity)) return ActionResult.PASS;
+		System.out.println(target.getType());
 		player.sendMessage(Text.literal(player.getName().getString()+"(You) attack a "+(target.getName().getString())));
 		System.out.println(world.isClient);
 		Stats plrStats = getPlrStats(player);
 		int strMod = plrStats.getModifier(Stats.StatType.STRENGTH);
 		int roll = Dice.rollD20(strMod);
 //		player.sendMessage(Text.literal("Attack Roll: "+roll));
-		player.sendMessage(Text.literal("Attempting to attack Osker. Their AC is 13"),false);
+		int targetAC = ENTITY_AC.getOrDefault(target.getType(),10);
+		player.sendMessage(Text.literal("Attempting to attack "+(target.getName().getString())+". Their AC is "+targetAC),false);
 
 		player.sendMessage(Text.literal("You got "+roll),false);
 
-		if(roll>=12){
-			int dmg = Dice.rollD6(strMod);
-			player.sendMessage(
-					Text.literal("You hit "+target.getName().getString()+" dealing "+ (dmg)+ "damage"),
-					false
-			);
-			target.damage(player.getDamageSources().playerAttack(player),(float)dmg);
+		if(roll>=targetAC){
+			if (roll==20){
+				int dmg = Dice.rollD6(strMod)+Dice.rollD6(strMod);
+				player.sendMessage(
+						Text.literal("You hit "+target.getName().getString()+" dealing "+ (dmg)+ "damage"),
+						false
+				);
+				target.damage(player.getDamageSources().playerAttack(player),(float)dmg);
+			}else {
+				int dmg = Dice.rollD6(strMod);
+				player.sendMessage(
+						Text.literal("You hit "+target.getName().getString()+" dealing "+ (dmg)+ "damage"),
+						false
+				);
+				target.damage(player.getDamageSources().playerAttack(player),(float)dmg);
+			}
 			return ActionResult.SUCCESS;
 		}else{
 			player.sendMessage(
@@ -189,7 +216,9 @@ public class TutorialMod implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ModItems.registerModItems();
-
+		ENTITY_AC.put(EntityType.PIG,5);
+		ENTITY_AC.put(EntityType.PIGLIN,10);
+		ENTITY_AC.put(EntityType.PIGLIN_BRUTE,13);
 		AttackEntityCallback.EVENT.register(
 				(player, world, hand, entity, hitResult)
 						-> attack(player,entity,world)
@@ -259,8 +288,7 @@ public class TutorialMod implements ModInitializer {
 					.then(CommandManager.argument("amount",IntegerArgumentType.integer(0,20))
 							.executes(context -> {
 								int Amount = IntegerArgumentType.getInteger(context,"amount");
-								Stats plrStats = getPlrStats(context);
-								plrStats.setStrength(Amount);
+								setStat(context, Stats.StatType.STRENGTH,Amount);
 								context.getSource().sendFeedback(
 										() -> Text.literal("You have set your strength to " + Amount ),
 										false
@@ -271,7 +299,7 @@ public class TutorialMod implements ModInitializer {
 					.then(CommandManager.literal("get")
 							.executes(context -> {
 								context.getSource().sendFeedback(
-										() -> Text.literal("Your strength is " + getPlrStats(context).getStrength()),
+										() -> Text.literal("Your strength is " + getStat(context, Stats.StatType.STRENGTH)),
 										false
 								);
 								return 1;
@@ -279,11 +307,12 @@ public class TutorialMod implements ModInitializer {
 				)
 					.then(CommandManager.literal("constitution")
 						.then(CommandManager.literal("set")
+
 							.then(CommandManager.argument("amount",IntegerArgumentType.integer(0,20))
 								.executes(context -> {
 									int Amount = IntegerArgumentType.getInteger(context,"amount");
 
-									getPlrStats(context).setConstitution(Amount);
+									setStat(context, Stats.StatType.CONSTITUTION,Amount);
 										context.getSource().sendFeedback(
 											() -> Text.literal("You have set your constitution to " + Amount ),
 											false
@@ -291,16 +320,41 @@ public class TutorialMod implements ModInitializer {
 											return 1;
 										}))
 								)
-									.then(CommandManager.literal("get")
-											.executes(context -> {
+							.then(CommandManager.literal("get")
+							 .executes(context -> {
 												context.getSource().sendFeedback(
-														() -> Text.literal("Your constitution is " + getPlrStats(context).getConstitution()),
+														() -> Text.literal("Your constitution is " + getStat(context, Stats.StatType.CONSTITUTION)),
 														false
 												);
 												return 1;
 											}))
-							)
-				);
+
+				).then(CommandManager.literal("level")
+						.then(CommandManager.literal("set")
+
+								.then(CommandManager.argument("amount",IntegerArgumentType.integer(0,20))
+										.executes(context -> {
+											int Amount = IntegerArgumentType.getInteger(context,"amount");
+
+											setStat(context, Stats.StatType.LEVEL,Amount);
+											context.getSource().sendFeedback(
+													() -> Text.literal("You have set your Level to " + Amount ),
+													false
+											);
+											return 1;
+										}))
+						)
+						.then(CommandManager.literal("get")
+								.executes(context -> {
+									context.getSource().sendFeedback(
+											() -> Text.literal("Your Level is " + getStat(context, Stats.StatType.LEVEL)),
+											false
+									);
+									return 1;
+								}))
+
+				)
+		);
 		});
 	}
 }

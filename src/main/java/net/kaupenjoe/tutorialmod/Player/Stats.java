@@ -8,7 +8,12 @@ import net.kaupenjoe.tutorialmod.DnDSystem.Dice;
 import net.minecraft.text.Text;
 
 public class Stats {
-    private int strength,dexterity,constitution,level,MaxHP,AC;
+    private int
+            strength,
+            dexterity,
+            constitution,
+
+    level,MaxHP,AC;
 
     public Stats(int strength, int dexterity, int constitution, int level) {
         this.strength = strength;
@@ -86,7 +91,7 @@ public class Stats {
         this.MaxHP+=amount;
     }
     public int addMaxHP() {
-        int roll = Dice.rollD8(getModifier(StatType.CONSTITUTION));
+        int roll = Math.max(Dice.rollD8(getModifier(StatType.CONSTITUTION)),1);
         this.MaxHP+=roll;
         return roll;
     }
@@ -105,7 +110,7 @@ public class Stats {
         }
     }
     public void levelUp(CommandContext<ServerCommandSource> context) {
-        int roll = Math.max(addMaxHP(),1);
+        int roll = addMaxHP();
         context.getSource().sendFeedback(() -> Text.literal("Your HP is added by: "+roll+" Your new HP is "+MaxHP),false);
         addLevel(1);
 
@@ -124,10 +129,30 @@ public class Stats {
         System.out.println(value);
         return (int) Math.floor((value-10.0)/2.0);
     }
+    public int getStat(StatType stat){
+        return switch (stat){
+            case STRENGTH -> strength;
+            case CONSTITUTION -> constitution;
+            case DEXTERITY -> dexterity;
+            case LEVEL ->  level;
+
+            default -> 0;
+        };
+    }
+    public void setStat(StatType stat,int amount){
+        switch (stat){
+            case STRENGTH -> strength = amount;
+            case CONSTITUTION -> constitution = amount;
+            case DEXTERITY -> dexterity = amount;
+            case LEVEL -> level = amount;
+        };
+    }
     public enum StatType{
         STRENGTH,
         DEXTERITY,
-        CONSTITUTION;
+        CONSTITUTION,
+        LEVEL,
+        ;
     }
 
 }
