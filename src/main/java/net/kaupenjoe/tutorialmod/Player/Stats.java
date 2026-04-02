@@ -12,7 +12,7 @@ public class Stats {
             strength,
             dexterity,
             constitution,
-
+    critThreshold,
     level,MaxHP,AC;
 
     public Stats(int strength, int dexterity, int constitution, int level) {
@@ -21,6 +21,7 @@ public class Stats {
         this.constitution = constitution;
         this.level = level;
         initializeMaxHp();
+        initializeAC();
     }
 
     public Stats(int strength) {
@@ -29,6 +30,14 @@ public class Stats {
 
     public int getStrength() {
         return strength;
+    }
+
+    public int getCritThreshold() {
+        return critThreshold;
+    }
+
+    public void setCritThreshold(int critThreshold) {
+        this.critThreshold = critThreshold;
     }
 
     public void setStrength(int strength) {

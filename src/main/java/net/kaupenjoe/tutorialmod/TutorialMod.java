@@ -6,6 +6,9 @@ import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.kaupenjoe.tutorialmod.DnDSystem.Dice;
+import net.kaupenjoe.tutorialmod.DnDSystem.Weapon;
+import net.kaupenjoe.tutorialmod.DnDSystem.Weapons;
+import net.kaupenjoe.tutorialmod.Player.DNDCharacter;
 import net.kaupenjoe.tutorialmod.Player.Stats;
 import net.kaupenjoe.tutorialmod.item.ModItems;
 import net.minecraft.entity.Entity;
@@ -31,7 +34,7 @@ import java.util.UUID;
 
 
 public class TutorialMod implements ModInitializer {
-	public static final Map<UUID, Stats> PLAYER_STATS = new HashMap<>();
+	public static final Map<UUID, DNDCharacter> PLAYER_CHARACTERS = new HashMap<>();
 	public static final Map<EntityType,Integer> ENTITY_AC = new HashMap<>();
 
 
@@ -40,37 +43,60 @@ public class TutorialMod implements ModInitializer {
 
 	public static Stats getPlrStats(CommandContext<ServerCommandSource> context){
 		UUID uuid = Objects.requireNonNull(context.getSource().getPlayer()).getUuid();
-		Stats plrStats = PLAYER_STATS.get(uuid);
-		if(plrStats == null){
-			plrStats = new Stats(5,5,5,1);
-			applyMaxHP(context.getSource().getPlayer(), plrStats.getMaxHP());
-			PLAYER_STATS.put(uuid,plrStats);
+		DNDCharacter plrCharacter = PLAYER_CHARACTERS.get(uuid);
+		if(plrCharacter == null){
+			plrCharacter = new DNDCharacter();
+			applyMaxHP(context.getSource().getPlayer(), plrCharacter.getStats().getMaxHP());
+			PLAYER_CHARACTERS.put(uuid,plrCharacter);
 		}
-        return plrStats;
+        return plrCharacter.getStats();
+
 	}
 
 
 	public static Stats getPlrStats(PlayerEntity player){
 		UUID uuid = Objects.requireNonNull(player).getUuid();
-		Stats plrStats = PLAYER_STATS.get(uuid);
-		if(plrStats == null){
-			plrStats = new Stats(5,5,5,1);
-			applyMaxHP(player, plrStats.getMaxHP());
-			PLAYER_STATS.put(uuid,plrStats);
+		DNDCharacter plrCharacter = PLAYER_CHARACTERS.get(uuid);
+		if(plrCharacter == null){
+			plrCharacter = new DNDCharacter();
+			applyMaxHP(player, plrCharacter.getStats().getMaxHP());
+			PLAYER_CHARACTERS.put(uuid,plrCharacter);
 		}
-		return plrStats;
+		return plrCharacter.getStats();
 	}
 
 	public static Stats getPlrStats(ServerCommandSource context){
 		UUID uuid = Objects.requireNonNull(context.getPlayer()).getUuid();
-		Stats plrStats = PLAYER_STATS.get(uuid);
-		if(plrStats == null){
-			plrStats = new Stats(5,5,5,1);
-			applyMaxHP(context.getPlayer(), plrStats.getMaxHP());
-			PLAYER_STATS.put(uuid,plrStats);
+		DNDCharacter plrCharacter = PLAYER_CHARACTERS.get(uuid);
+		if(plrCharacter == null){
+			plrCharacter = new DNDCharacter();
+			applyMaxHP(context.getPlayer(), plrCharacter.getStats().getMaxHP());
+			PLAYER_CHARACTERS.put(uuid,plrCharacter);
 		}
-		return plrStats;
+		return plrCharacter.getStats();
 	}
+	public static DNDCharacter getPlrCharacter(ServerCommandSource context){
+		UUID uuid = Objects.requireNonNull(context.getPlayer()).getUuid();
+		DNDCharacter plrCharacter = PLAYER_CHARACTERS.get(uuid);
+		if(plrCharacter == null){
+			plrCharacter = new DNDCharacter();
+			applyMaxHP(context.getPlayer(), plrCharacter.getStats().getMaxHP());
+			PLAYER_CHARACTERS.put(uuid,plrCharacter);
+		}
+		return plrCharacter;
+	}
+
+	public static DNDCharacter getPlrCharacter(PlayerEntity player){
+		UUID uuid = Objects.requireNonNull(player).getUuid();
+		DNDCharacter plrCharacter = PLAYER_CHARACTERS.get(uuid);
+		if(plrCharacter == null){
+			plrCharacter = new DNDCharacter();
+			applyMaxHP(player, plrCharacter.getStats().getMaxHP());
+			PLAYER_CHARACTERS.put(uuid,plrCharacter);
+		}
+		return plrCharacter;
+	}
+
 	public static int getStat(CommandContext<ServerCommandSource> context, String stat) {
 		Stats plrStats = getPlrStats(context);
 
@@ -170,45 +196,17 @@ public class TutorialMod implements ModInitializer {
 		}
 	}
 
+	public static boolean isFalling(PlayerEntity player){
+		return (!player.isOnGround()&& player.fallDistance > 0);
+	}
 	public static ActionResult attack(PlayerEntity player, Entity target, World world){
 
 		if(!(target instanceof LivingEntity)) return ActionResult.PASS;
-		System.out.println(target.getType());
-		player.sendMessage(Text.literal(player.getName().getString()+"(You) attack a "+(target.getName().getString())));
-		System.out.println(world.isClient);
+
 		Stats plrStats = getPlrStats(player);
-		int strMod = plrStats.getModifier(Stats.StatType.STRENGTH);
-		int roll = Dice.rollD20(strMod);
-//		player.sendMessage(Text.literal("Attack Roll: "+roll));
-		int targetAC = ENTITY_AC.getOrDefault(target.getType(),10);
-		player.sendMessage(Text.literal("Attempting to attack "+(target.getName().getString())+". Their AC is "+targetAC),false);
-
-		player.sendMessage(Text.literal("You got "+roll),false);
-
-		if(roll>=targetAC){
-			if (roll==20){
-				int dmg = Dice.rollD6(strMod)+Dice.rollD6(strMod);
-				player.sendMessage(
-						Text.literal("You hit "+target.getName().getString()+" dealing "+ (dmg)+ "damage"),
-						false
-				);
-				target.damage(player.getDamageSources().playerAttack(player),(float)dmg);
-			}else {
-				int dmg = Dice.rollD6(strMod);
-				player.sendMessage(
-						Text.literal("You hit "+target.getName().getString()+" dealing "+ (dmg)+ "damage"),
-						false
-				);
-				target.damage(player.getDamageSources().playerAttack(player),(float)dmg);
-			}
-			return ActionResult.SUCCESS;
-		}else{
-			player.sendMessage(
-					Text.literal("You miss"),
-					false
-			);
-			return ActionResult.FAIL;
-		}
+		DNDCharacter plrCharacter = getPlrCharacter(player);
+		Weapon currentWeapon = plrCharacter.getEquippedWeapon();
+		return currentWeapon.attack(plrCharacter,player,(LivingEntity) target);
 
 	}
 
@@ -259,7 +257,7 @@ public class TutorialMod implements ModInitializer {
 
 							if(roll>=12){
 								source.sendFeedback(
-										()->Text.literal("You hit Osker dealing "+ (roll+2)+ "damage"),
+										()->Text.literal("You hit Osker dealing "+ (roll+2)+ " damage"),
 										false
 								);
 							}else{

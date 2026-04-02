@@ -48,4 +48,12 @@ public class Dice {
             return Math.min((int) (Math.random()*8)+1+modifier,(int) (Math.random()*8)+1+modifier);
         }
     }
+
+    public static  int roll(int count, int size){
+        int sum = 0;
+        for (int i = 0; i < count; i++) {
+            sum +=(int) (Math.random()*size)+1;
+        }
+        return sum;
+    }
 }
