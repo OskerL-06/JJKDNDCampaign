@@ -3,15 +3,20 @@ package net.kaupenjoe.tutorialmod.item;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 
 import net.kaupenjoe.tutorialmod.TutorialMod;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroups;
+import net.minecraft.item.*;
+import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registry;
 
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 
 public class ModItems {
-    public static final Item CREATED_CURSED_GUN = registerItem("created_cursed_gun", new Item(new Item.Settings()));
+    public static final Item CREATED_CURSED_GUN = registerItem("created_cursed_gun", new Item(new Item.Settings().maxCount(1)));
+
+    public static final Item RAW_CURSE_ENERGY = registerItem("raw_cursed_energy", new Item(new Item.Settings()));
+
+    public static final Item CREATED_CURSED_SWORD = registerItem("created_cursed_sword", new SwordItem(ModToolMaterials.CURSED_TOOL,
+            new  Item.Settings().attributeModifiers(SwordItem.createAttributeModifiers(ModToolMaterials.CURSED_TOOL,3,2.4f))));
 
     public static Item registerItem(String name, Item item){
         return Registry.register(Registries.ITEM, Identifier.of(TutorialMod.MOD_ID,name), item);
@@ -20,8 +25,11 @@ public class ModItems {
     public static void registerModItems() {
         TutorialMod.LOGGER.info("Registering Mod Items for " + TutorialMod.MOD_ID);
 
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(entries -> {
-            entries.add(CREATED_CURSED_GUN);
-        });
+//        ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(entries -> {
+//        });
+//        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> {
+//            entries.add(CREATED_CURSED_GUN);
+//            entries.add(CREATED_CURSED_SWORD);
+//        });
     }
 }

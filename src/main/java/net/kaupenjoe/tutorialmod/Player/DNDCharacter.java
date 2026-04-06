@@ -2,6 +2,8 @@ package net.kaupenjoe.tutorialmod.Player;
 
 import net.kaupenjoe.tutorialmod.DnDSystem.Weapon;
 import net.kaupenjoe.tutorialmod.DnDSystem.Weapons;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.player.PlayerEntity;
 
 public class DNDCharacter {
     Weapon equippedWeapon = Weapons.FIST;
@@ -16,6 +18,13 @@ public class DNDCharacter {
 
     public void setEquippedWeapon(Weapon equippedWeapon) {
         this.equippedWeapon = equippedWeapon;
+    }
+
+    public void applyMaxHP(PlayerEntity player){
+        var attr = player.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
+        if( attr!=null){
+            attr.setBaseValue(stats.getMaxHP());
+        }
     }
 
     public Weapon getEquippedWeapon() {

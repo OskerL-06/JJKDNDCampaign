@@ -13,6 +13,8 @@ public class Stats {
             dexterity,
             constitution,
     critThreshold,
+    currentCursedEnergy,
+    maxCursedEnergy,
     level,MaxHP,AC;
 
     public Stats(int strength, int dexterity, int constitution, int level) {
@@ -22,6 +24,24 @@ public class Stats {
         this.level = level;
         initializeMaxHp();
         initializeAC();
+        currentCursedEnergy = 100;
+        maxCursedEnergy = 100;
+    }
+
+    public int getCurrentCursedEnergy() {
+        return currentCursedEnergy;
+    }
+
+    public void setCurrentCursedEnergy(int currentCursedEnergy) {
+        this.currentCursedEnergy = currentCursedEnergy;
+    }
+
+    public int getMaxCursedEnergy() {
+        return maxCursedEnergy;
+    }
+
+    public void setMaxCursedEnergy(int maxCursedEnergy) {
+        this.maxCursedEnergy = maxCursedEnergy;
     }
 
     public Stats(int strength) {

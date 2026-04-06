@@ -1,3 +1,13 @@
 {
-  "item.dndjjk.created_cursed_gun": "Created Cursed Gun"
+  "item.dndjjk.created_cursed_gun": "Created Cursed Gun",
+  "item.dndjjk.created_cursed_sword": "Created Cursed Sword",
+  "item.dndjjk.raw_cursed_energy": "Raw Cursed Energy",
+
+
+  "itemgroup.dndjjk.cursed_tools": "Cursed Tools",
+  "itemgroup.dndjjk.cursed_energy": "Cursed Energy Items",
+
+  "key.dndjjk.openscreen": "Open Weapon Shop",
+
+  "category.dndjjk": "JJK DND Edition"
 }

@@ -5,17 +5,24 @@ import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.kaupenjoe.tutorialmod.DnDSystem.Dice;
 import net.kaupenjoe.tutorialmod.DnDSystem.Weapon;
 import net.kaupenjoe.tutorialmod.DnDSystem.Weapons;
 import net.kaupenjoe.tutorialmod.Player.DNDCharacter;
 import net.kaupenjoe.tutorialmod.Player.Stats;
+import net.kaupenjoe.tutorialmod.item.ModItemGroups;
 import net.kaupenjoe.tutorialmod.item.ModItems;
+import net.kaupenjoe.tutorialmod.util.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
@@ -30,16 +37,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-
+import java.util.function.Consumer;
 
 
 public class TutorialMod implements ModInitializer {
 	public static final Map<UUID, DNDCharacter> PLAYER_CHARACTERS = new HashMap<>();
 	public static final Map<EntityType,Integer> ENTITY_AC = new HashMap<>();
-
+	public static Map<ActionTypes, Consumer<ActionContext>> actions = new HashMap<>();
 
 	public static final String MOD_ID = "dndjjk";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+
 
 	public static Stats getPlrStats(CommandContext<ServerCommandSource> context){
 		UUID uuid = Objects.requireNonNull(context.getSource().getPlayer()).getUuid();
@@ -211,12 +219,78 @@ public class TutorialMod implements ModInitializer {
 	}
 
 
+
+
+
 	@Override
 	public void onInitialize() {
+		PayloadTypeRegistry.playC2S().register(
+				ActionPayload.ID,
+				ActionPayload.CODEC
+		);
+		PayloadTypeRegistry.playC2S().register(
+				GiveWeaponPayload.ID,
+				GiveWeaponPayload.CODEC
+		);
+
+
 		ModItems.registerModItems();
+		ModItemGroups.registerItemGroups();
+		ActionManager.registerActions(actions);
+		System.out.println("HERE");
+
+
+		System.out.println("DID I GET HERE??? PLEASE TELL ME");
+
 		ENTITY_AC.put(EntityType.PIG,5);
 		ENTITY_AC.put(EntityType.PIGLIN,10);
 		ENTITY_AC.put(EntityType.PIGLIN_BRUTE,13);
+
+//		actions.put(ActionTypes.GIVE_WEAPON, context -> {
+//			giveWeapon(context);
+//		});
+
+
+		ServerPlayNetworking.registerGlobalReceiver(ActionPayload.ID,
+				(payload,context)->{
+					ServerPlayerEntity player = context.player();
+
+					System.out.println("Action Payload");
+					context.server().execute(() -> {
+
+						System.out.println("Got to the Server Execute");
+//						ActionContext ctx = new ActionContext(player,context.server(),payload.data());
+//
+//						Consumer<ActionContext> action = actions.get(payload.action());
+//
+//						if(action!= null){
+//							action.accept(ctx);
+//							player.closeHandledScreen();
+//						}
+					});
+				});
+		ServerPlayNetworking.registerGlobalReceiver(GiveWeaponPayload.ID,
+				(payload,context)->{
+					ServerPlayerEntity player = context.player();
+
+					System.out.println("Give Weapon Payload");
+					context.server().execute(() -> {
+
+						System.out.println("Got to the Server Execute");
+						GiveWeaponContext ctx = new GiveWeaponContextBuilder(player,context.server(),payload.weapon()).build();
+						System.out.println("Got Berfore the Give Weapon function");
+//						Consumer<ActionContext> action = actions.get(payload.action());
+
+						System.out.println("Got to the Give Weapon Function");
+
+						WeaponsTypes weapon = ctx.getWeapon();
+						ItemStack itemStack = new ItemStack(weapon.getWeapon());
+						player.giveItemStack(itemStack);
+						player.closeHandledScreen();
+//						GiveWeaponPayload;
+					});
+				});
+
 		AttackEntityCallback.EVENT.register(
 				(player, world, hand, entity, hitResult)
 						-> attack(player,entity,world)
