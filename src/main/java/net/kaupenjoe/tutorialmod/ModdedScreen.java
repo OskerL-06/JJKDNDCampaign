@@ -66,28 +66,13 @@ public class ModdedScreen extends Screen {
         panel.updatePanel(this);
         this.renderInGameBackground(context);
 
-        context.fill(panel.x,panel.y,panel.width,panel.height,0xAA000000);
+        int panelY = (this.height-panel.height)/2;
+        context.fill(panel.x,panel.y,panel.x+panel.width,panel.y+panel.height,0xAA000000);
         context.drawText(
                 textRenderer,
-                "Cursed Shop",
-                panel.x +40,
-                panel.y +10,
-                0xFFFFFF,
-                false
-        );
-        context.drawText(
-                textRenderer,
-                "PanelY() "+panel.y,
-                20,
-                20,
-                0xFFFFFF,
-                false
-        );
-        context.drawText(
-                textRenderer,
-                "PanelX() "+panel.x,
-                20,
-                40,
+                "Weapon Creator",
+                (panel.width/2)+panel.x-30,
+                panel.y-10,
                 0xFFFFFF,
                 false
         );
@@ -99,10 +84,6 @@ public class ModdedScreen extends Screen {
             int y = (panel.padding+panel.y)+((i/ panel.columns)* (item.size+ panel.spacing));
 
             context.drawItem(item.stack,x,y);
-
-            System.out.println("\nRow: "+(i/panel.columns)+"\nColumn: "+(i% panel.columns));
-
-            System.out.println("\nX: "+x+"\nY: "+y);
             if(item.isOver(mouseX,mouseY,x,y)){
                 context.fill(x,y,x+item.size,y+item.size,0x80FFFFFF);
                 context.drawTooltip(

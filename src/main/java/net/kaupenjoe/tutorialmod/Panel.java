@@ -22,14 +22,11 @@ public class Panel {
         this.height = height;
         x = (moddedScreen.width-width)/2;
         y = (moddedScreen.height-height)/2;
-
-        System.out.println(width+" : "+ x);
     }
 
     void updatePanel(ModdedScreen moddedScreen){
         int checkX = (moddedScreen.width-width)/2;
         int checkY = (moddedScreen.height-height)/2;
-        System.out.println(checkX+" : "+ x);
         if(x!=checkX||y!=checkY){
             x = checkX;
             y = checkY;

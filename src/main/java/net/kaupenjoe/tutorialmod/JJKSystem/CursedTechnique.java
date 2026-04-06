@@ -6,6 +6,9 @@ import net.minecraft.entity.player.PlayerInventory;
 
 
 public abstract class CursedTechnique {
+    int baseCE;
 
     public abstract void onUse();
+
+
 }
