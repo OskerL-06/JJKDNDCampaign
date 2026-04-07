@@ -2,7 +2,6 @@ package net.kaupenjoe.tutorialmod.JJKSystem;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.kaupenjoe.tutorialmod.ClickableItem;
-import net.kaupenjoe.tutorialmod.JJKSystem.Panel;
 import net.kaupenjoe.tutorialmod.TutorialMod;
 import net.kaupenjoe.tutorialmod.WeaponsTypes;
 import net.kaupenjoe.tutorialmod.util.GiveWeaponPayload;
@@ -38,15 +37,10 @@ public class WeaponCreationScreen extends Screen {
 
         int panelWidth = 200;
         int panelHeight = 100;
-        int panelX = (this.width-panelWidth)/2;
-        int panelY = (this.height-panelHeight)/2;
         panel = new Panel(panelWidth,panelHeight,this);
-
-        System.out.println("Init Function: "+panelX+" : "+panelWidth);
         int size = 16;
 
         for (WeaponsTypes weapon : weapons) {
-            System.out.println("Added an Item: " + weapon.name());
             items.add(new ClickableItem(
                     new ItemStack(weapon.getWeapon()),
                     weapon,
@@ -99,8 +93,8 @@ public class WeaponCreationScreen extends Screen {
 
         for(int i = 0; i<weapons.size();i++){
             ClickableItem item = items.get(i);
-            int x = (panel.padding+panel.x)+((i%panel.columns)* panel.spacing);
-            int y = (panel.padding+panel.y)+((i/ panel.columns)* panel.spacing);
+            int x = (panel.padding+panel.x)+((i%panel.columns)* (item.size + panel.spacing));
+            int y = (panel.padding+panel.y)+((i/ panel.columns)* (item.size + panel.spacing));
             if(item.isOver(mouseX,mouseY,x,y)){
                 ClientPlayNetworking.send(new GiveWeaponPayload(item.weapon));
 

@@ -1,25 +1,16 @@
 package net.kaupenjoe.tutorialmod;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.kaupenjoe.tutorialmod.item.ModItems;
-import net.kaupenjoe.tutorialmod.util.ActionContext;
-import net.kaupenjoe.tutorialmod.util.ActionPayload;
-import net.kaupenjoe.tutorialmod.util.ActionTypes;
 import net.kaupenjoe.tutorialmod.util.GiveWeaponPayload;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static net.kaupenjoe.tutorialmod.TutorialMod.actions;
 
 public class ModdedScreen extends Screen {
     public static final Identifier GIVE_WEAPON = Identifier.of(TutorialMod.MOD_ID,"give_weapon");
@@ -45,15 +36,10 @@ public class ModdedScreen extends Screen {
 
         int panelWidth = 200;
         int panelHeight = 100;
-        int panelX = (this.width-panelWidth)/2;
-        int panelY = (this.height-panelHeight)/2;
         panel = new Panel(panelWidth,panelHeight,this);
-
-        System.out.println("Init Function: "+panelX+" : "+panelWidth);
         int size = 16;
 
         for (WeaponsTypes weapon : weapons) {
-            System.out.println("Added an Item: " + weapon.name());
             items.add(new ClickableItem(
                     new ItemStack(weapon.getWeapon()),
                     weapon,
@@ -106,8 +92,8 @@ public class ModdedScreen extends Screen {
 
         for(int i = 0; i<weapons.size();i++){
             ClickableItem item = items.get(i);
-            int x = (panel.padding+panel.x)+((i%panel.columns)* panel.spacing);
-            int y = (panel.padding+panel.y)+((i/ panel.columns)* panel.spacing);
+            int x = (panel.padding+panel.x)+((i%panel.columns)* (item.size + panel.spacing));
+            int y = (panel.padding+panel.y)+((i/ panel.columns)* (item.size + panel.spacing));
             if(item.isOver(mouseX,mouseY,x,y)){
                 ClientPlayNetworking.send(new GiveWeaponPayload(item.weapon));
 
