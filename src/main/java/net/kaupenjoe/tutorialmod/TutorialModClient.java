@@ -24,11 +24,7 @@ public class TutorialModClient implements ClientModInitializer {
 
     }
     public static void useCT(){
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
-
-//        PlayerChara
-
-        ClientPlayNetworking.send(new UseCursedTechniquePayload(player.getUuid()));
+        ClientPlayNetworking.send(new UseCursedTechniquePayload());
     }
     @Override
     public void onInitializeClient() {
@@ -46,6 +42,10 @@ public class TutorialModClient implements ClientModInitializer {
             while (useCursedTechniqueKey.wasPressed()){
                 useCT();
             }
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(UseCursedTechniquePayload.ID,(payload, context) -> {
+            openScreen();
         });
     }
 }

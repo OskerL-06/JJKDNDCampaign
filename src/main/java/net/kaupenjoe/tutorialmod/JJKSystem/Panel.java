@@ -1,7 +1,5 @@
-package net.kaupenjoe.tutorialmod;
+package net.kaupenjoe.tutorialmod.JJKSystem;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.screen.Screen;
 
 public class Panel {
@@ -11,7 +9,7 @@ public class Panel {
     int spacing = 20;
     int totalWidth = columns*spacing;
 
-    public Panel( int width, int height,int x, int y) {
+    public Panel(int width, int height, int x, int y) {
         this.width = width;
         this.height = height;
         this.x = x;

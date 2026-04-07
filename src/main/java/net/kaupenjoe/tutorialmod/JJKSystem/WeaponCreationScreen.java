@@ -1,17 +1,14 @@
-package net.kaupenjoe.tutorialmod;
+package net.kaupenjoe.tutorialmod.JJKSystem;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.kaupenjoe.tutorialmod.item.ModItems;
-import net.kaupenjoe.tutorialmod.util.ActionContext;
-import net.kaupenjoe.tutorialmod.util.ActionPayload;
-import net.kaupenjoe.tutorialmod.util.ActionTypes;
+import net.kaupenjoe.tutorialmod.ClickableItem;
+import net.kaupenjoe.tutorialmod.JJKSystem.Panel;
+import net.kaupenjoe.tutorialmod.TutorialMod;
+import net.kaupenjoe.tutorialmod.WeaponsTypes;
 import net.kaupenjoe.tutorialmod.util.GiveWeaponPayload;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
@@ -19,14 +16,10 @@ import net.minecraft.util.Identifier;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.kaupenjoe.tutorialmod.TutorialMod.actions;
-
-public class ModdedScreen extends Screen {
+public class WeaponCreationScreen extends Screen {
     public static final Identifier GIVE_WEAPON = Identifier.of(TutorialMod.MOD_ID,"give_weapon");
     public static final List<ClickableItem> items = new ArrayList<>();
     public static final List<WeaponsTypes> weapons = List.of(
-            WeaponsTypes.CURSED_SWORD,
-            WeaponsTypes.DIAMOND_SWORD,
             WeaponsTypes.CURSED_SWORD,
             WeaponsTypes.DIAMOND_SWORD
      );
@@ -35,7 +28,7 @@ public class ModdedScreen extends Screen {
 
 
 
-    protected ModdedScreen(Text title) {
+    protected WeaponCreationScreen(Text title) {
         super(title);
     }
 

@@ -10,6 +10,8 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.kaupenjoe.tutorialmod.DnDSystem.Dice;
 import net.kaupenjoe.tutorialmod.DnDSystem.Weapon;
 import net.kaupenjoe.tutorialmod.DnDSystem.Weapons;
+import net.kaupenjoe.tutorialmod.JJKSystem.CursedTechnique;
+import net.kaupenjoe.tutorialmod.JJKSystem.WeaponCreatorCT;
 import net.kaupenjoe.tutorialmod.Player.DNDCharacter;
 import net.kaupenjoe.tutorialmod.Player.Stats;
 import net.kaupenjoe.tutorialmod.item.ModItemGroups;
@@ -232,7 +234,14 @@ public class TutorialMod implements ModInitializer {
 				GiveWeaponPayload.ID,
 				GiveWeaponPayload.CODEC
 		);
-
+		PayloadTypeRegistry.playC2S().register(
+				UseCursedTechniquePayload.ID,
+				UseCursedTechniquePayload.CODEC
+		);
+		PayloadTypeRegistry.playS2C().register(
+				UseCursedTechniquePayload.ID,
+				UseCursedTechniquePayload.CODEC
+		);
 
 		ModItems.registerModItems();
 		ModItemGroups.registerItemGroups();
@@ -285,11 +294,25 @@ public class TutorialMod implements ModInitializer {
 
 						WeaponsTypes weapon = ctx.getWeapon();
 						ItemStack itemStack = new ItemStack(weapon.getWeapon());
+
+						System.out.println("What is the Weapon? Oh its a: "+weapon.getWeapon().getName().toString());
 						player.giveItemStack(itemStack);
 						player.closeHandledScreen();
 //						GiveWeaponPayload;
 					});
 				});
+		ServerPlayNetworking.registerGlobalReceiver(UseCursedTechniquePayload.ID,
+				((payload, context) -> {
+					System.out.println("Here I am Using my CT");
+					DNDCharacter plrChar = getPlrCharacter(context.player());
+					CursedTechnique CT = plrChar.getCT();
+
+					CursedTechniqueContext cursedTechniqueContext = new CursedTechniqueContext(context.player(),context.server());
+					if (CT!=null){
+						CT.activate(cursedTechniqueContext);
+					}
+				})
+			);
 
 		AttackEntityCallback.EVENT.register(
 				(player, world, hand, entity, hitResult)
@@ -298,6 +321,20 @@ public class TutorialMod implements ModInitializer {
 				);
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+			dispatcher.register(CommandManager.literal("CT")
+					.executes(context -> {
+						UUID plrUUID = context.getSource().getPlayer().getUuid();
+						DNDCharacter plrChar = PLAYER_CHARACTERS.get(plrUUID);
+
+						plrChar.setCT(new WeaponCreatorCT());
+
+						PLAYER_CHARACTERS.put(plrUUID,plrChar);
+
+
+
+						return 1;
+					})
+			);
 			dispatcher.register(CommandManager.literal("levelup")
 					.executes(context -> {
 						Stats plrStats = getPlrStats(context);
