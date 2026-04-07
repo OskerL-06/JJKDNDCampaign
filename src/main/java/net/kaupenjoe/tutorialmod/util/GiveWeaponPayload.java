@@ -16,7 +16,6 @@ public record GiveWeaponPayload(WeaponsTypes weapon) implements CustomPayload {
     PacketCodec.of(
             ((payload,buf) -> buf.writeEnumConstant(payload.weapon())),
             buf -> new GiveWeaponPayload(buf.readEnumConstant(WeaponsTypes.class))
-
     );
 
     @Override

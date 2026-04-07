@@ -26,6 +26,7 @@ import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import org.slf4j.Logger;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -44,6 +45,7 @@ public class TutorialMod implements ModInitializer {
 	public static final Map<UUID, DNDCharacter> PLAYER_CHARACTERS = new HashMap<>();
 	public static final Map<EntityType,Integer> ENTITY_AC = new HashMap<>();
 	public static Map<ActionTypes, Consumer<ActionContext>> actions = new HashMap<>();
+//	public static final Identifier USECT = Identifier.of(TutorialMod.MOD_ID,"useCT");
 
 	public static final String MOD_ID = "dndjjk";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
@@ -233,6 +235,11 @@ public class TutorialMod implements ModInitializer {
 				GiveWeaponPayload.CODEC
 		);
 
+		PayloadTypeRegistry.playC2S().register(
+				UseCursedTechniquePayload.ID,
+				UseCursedTechniquePayload.CODEC
+		);
+
 
 		ModItems.registerModItems();
 		ModItemGroups.registerItemGroups();
@@ -249,7 +256,19 @@ public class TutorialMod implements ModInitializer {
 //		actions.put(ActionTypes.GIVE_WEAPON, context -> {
 //			giveWeapon(context);
 //		});
-
+//		ServerPlayNetworking.registerGlobalReceiver(UseCursedTechniquePayload.ID,
+//			(payload,context)->{
+//				ServerPlayerEntity player = context.player();
+//
+//				System.out.println("Using Cursed Technique Payload");
+//				context.server().execute(() -> {
+//
+//					System.out.println("Got to the Server Execute");
+//					System.out.print("Server Player Uuid:"+player.getUuid());
+//					System.out.print("Client Player Uuid:"+payload.plrUUID());
+//
+//				});
+//		});
 
 		ServerPlayNetworking.registerGlobalReceiver(ActionPayload.ID,
 				(payload,context)->{
@@ -290,7 +309,12 @@ public class TutorialMod implements ModInitializer {
 //						GiveWeaponPayload;
 					});
 				});
+		ServerPlayNetworking.registerGlobalReceiver(UseCursedTechniquePayload.ID, (payload, context) -> {
+			context.server().execute(() -> {
 
+				System.out.println("Received payload from: " + context.player().getName().getString());
+			});
+		});
 		AttackEntityCallback.EVENT.register(
 				(player, world, hand, entity, hitResult)
 						-> attack(player,entity,world)
@@ -298,6 +322,10 @@ public class TutorialMod implements ModInitializer {
 				);
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+			dispatcher.register(CommandManager.literal("modifystat")
+					.then()
+
+			);
 			dispatcher.register(CommandManager.literal("levelup")
 					.executes(context -> {
 						Stats plrStats = getPlrStats(context);

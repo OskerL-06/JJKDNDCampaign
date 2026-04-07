@@ -9,7 +9,7 @@ public class DNDCharacter {
     Weapon equippedWeapon = Weapons.FIST;
     Stats stats;
     public DNDCharacter(){
-        this.stats= new Stats(5,5,5,1);
+        this.stats= new Stats(10,10,10,10,10,10,1);
     }
 
     public Stats getStats() {
