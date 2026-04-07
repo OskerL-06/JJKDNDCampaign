@@ -1,15 +1,14 @@
 package net.kaupenjoe.tutorialmod.util;
 
+import net.kaupenjoe.tutorialmod.Player.CursedEnergy;
 import net.kaupenjoe.tutorialmod.Player.DNDCharacter;
+import net.kaupenjoe.tutorialmod.Player.SorcererCharacter;
 import net.kaupenjoe.tutorialmod.Player.Stats;
-import net.kaupenjoe.tutorialmod.TutorialMod;
 import net.kaupenjoe.tutorialmod.WeaponsTypes;
 import net.kaupenjoe.tutorialmod.item.ModItems;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.stat.Stat;
-import org.apache.logging.log4j.core.jmx.Server;
 
 import java.util.Map;
 import java.util.Objects;
@@ -17,6 +16,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import static net.kaupenjoe.tutorialmod.TutorialMod.PLAYER_CHARACTERS;
+import static net.kaupenjoe.tutorialmod.TutorialMod.SORCERER_CHARACTER;
 
 public class ActionManager {
     public static void registerActions(Map<ActionTypes, Consumer<ActionContext>> action){
@@ -26,10 +26,10 @@ public class ActionManager {
         });
     }
     private boolean hasEnoughCE(ServerPlayerEntity player, WeaponsTypes weapon){
-        DNDCharacter plrCharacter = getPlrCharacter(player);
-        Stats plrStats = plrCharacter.getStats();
+        SorcererCharacter plrCharacter = getSorcererPlrCharacter(player);
+        CursedEnergy plrStats = plrCharacter.getCursedEnergy();
 
-        return (plrStats.getCurrentCursedEnergy()>=WeaponsTypes.getCECost(weapon));
+        return (plrStats.getCurrentCE()>=WeaponsTypes.getCECost(weapon));
     }
 
     private static void giveWeapon(GiveWeaponContext  context){
@@ -62,6 +62,16 @@ public class ActionManager {
             plrCharacter = new DNDCharacter();
             plrCharacter.applyMaxHP(player);
             PLAYER_CHARACTERS.put(uuid,plrCharacter);
+        }
+        return plrCharacter;
+    }
+    private static SorcererCharacter getSorcererPlrCharacter(PlayerEntity player){
+        UUID uuid = Objects.requireNonNull(player).getUuid();
+        SorcererCharacter plrCharacter = SORCERER_CHARACTER.get(uuid);
+        if(plrCharacter == null){
+            plrCharacter = new SorcererCharacter();
+            plrCharacter.applyMaxHP(player);
+            SORCERER_CHARACTER.put(uuid,plrCharacter);
         }
         return plrCharacter;
     }

@@ -8,4 +8,7 @@ public class SorcererCharacter extends DNDCharacter{
     }
 
 
+    public CursedEnergy getCursedEnergy() {
+        return cursedEnergy;
+    }
 }

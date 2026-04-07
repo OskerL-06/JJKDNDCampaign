@@ -14,5 +14,19 @@ public class CursedEnergy {
         this.efficiency = efficiency;
     }
 
+    public int getCurrentCE() {
+        return currentCE;
+    }
 
+    public int getMaxCE() {
+        return maxCE;
+    }
+
+    public int getOutputCE() {
+        return outputCE;
+    }
+
+    public double getEfficiency() {
+        return efficiency;
+    }
 }

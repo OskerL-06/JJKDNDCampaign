@@ -11,6 +11,7 @@ import net.kaupenjoe.tutorialmod.DnDSystem.Dice;
 import net.kaupenjoe.tutorialmod.DnDSystem.Weapon;
 import net.kaupenjoe.tutorialmod.DnDSystem.Weapons;
 import net.kaupenjoe.tutorialmod.Player.DNDCharacter;
+import net.kaupenjoe.tutorialmod.Player.SorcererCharacter;
 import net.kaupenjoe.tutorialmod.Player.Stats;
 import net.kaupenjoe.tutorialmod.item.ModItemGroups;
 import net.kaupenjoe.tutorialmod.item.ModItems;
@@ -43,6 +44,8 @@ import java.util.function.Consumer;
 
 public class TutorialMod implements ModInitializer {
 	public static final Map<UUID, DNDCharacter> PLAYER_CHARACTERS = new HashMap<>();
+
+	public static final Map<UUID, SorcererCharacter> SORCERER_CHARACTER = new HashMap<>();
 	public static final Map<EntityType,Integer> ENTITY_AC = new HashMap<>();
 	public static Map<ActionTypes, Consumer<ActionContext>> actions = new HashMap<>();
 //	public static final Identifier USECT = Identifier.of(TutorialMod.MOD_ID,"useCT");
@@ -244,31 +247,11 @@ public class TutorialMod implements ModInitializer {
 		ModItems.registerModItems();
 		ModItemGroups.registerItemGroups();
 		ActionManager.registerActions(actions);
-		System.out.println("HERE");
-
-
-		System.out.println("DID I GET HERE??? PLEASE TELL ME");
 
 		ENTITY_AC.put(EntityType.PIG,5);
 		ENTITY_AC.put(EntityType.PIGLIN,10);
 		ENTITY_AC.put(EntityType.PIGLIN_BRUTE,13);
 
-//		actions.put(ActionTypes.GIVE_WEAPON, context -> {
-//			giveWeapon(context);
-//		});
-//		ServerPlayNetworking.registerGlobalReceiver(UseCursedTechniquePayload.ID,
-//			(payload,context)->{
-//				ServerPlayerEntity player = context.player();
-//
-//				System.out.println("Using Cursed Technique Payload");
-//				context.server().execute(() -> {
-//
-//					System.out.println("Got to the Server Execute");
-//					System.out.print("Server Player Uuid:"+player.getUuid());
-//					System.out.print("Client Player Uuid:"+payload.plrUUID());
-//
-//				});
-//		});
 
 		ServerPlayNetworking.registerGlobalReceiver(ActionPayload.ID,
 				(payload,context)->{
@@ -311,7 +294,6 @@ public class TutorialMod implements ModInitializer {
 				});
 		ServerPlayNetworking.registerGlobalReceiver(UseCursedTechniquePayload.ID, (payload, context) -> {
 			context.server().execute(() -> {
-
 				System.out.println("Received payload from: " + context.player().getName().getString());
 			});
 		});
@@ -323,7 +305,6 @@ public class TutorialMod implements ModInitializer {
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(CommandManager.literal("modifystat")
-					.then()
 
 			);
 			dispatcher.register(CommandManager.literal("levelup")
