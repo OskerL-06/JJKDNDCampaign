@@ -108,7 +108,7 @@ public class Stats {
         MaxHP = calculateMaxHp() + roll;
     }
 
-    public void initializeAC() {;
+    public void initializeAC() {
         AC = calculateAC();
     }
 
@@ -155,7 +155,6 @@ public class Stats {
             case DEXTERITY -> dexterity;
             default -> 0;
         };
-        System.out.println(value);
         return (int) Math.floor((value-10.0)/2.0);
     }
     public int getStat(StatType stat){
