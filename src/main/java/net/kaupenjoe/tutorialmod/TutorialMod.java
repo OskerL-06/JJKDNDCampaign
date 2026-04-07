@@ -11,12 +11,22 @@ import net.kaupenjoe.tutorialmod.DnDSystem.Dice;
 import net.kaupenjoe.tutorialmod.DnDSystem.Weapon;
 import net.kaupenjoe.tutorialmod.DnDSystem.Weapons;
 import net.kaupenjoe.tutorialmod.JJKSystem.CursedTechnique;
-import net.kaupenjoe.tutorialmod.JJKSystem.WeaponCreatorCT;
+import net.kaupenjoe.tutorialmod.JJKSystem.WeaponCreationCT.WeaponCreatorCT;
 import net.kaupenjoe.tutorialmod.Player.DNDCharacter;
 import net.kaupenjoe.tutorialmod.Player.Stats;
 import net.kaupenjoe.tutorialmod.item.ModItemGroups;
 import net.kaupenjoe.tutorialmod.item.ModItems;
+import net.kaupenjoe.tutorialmod.networking.Payload.ActionPayload;
+import net.kaupenjoe.tutorialmod.networking.Payload.GiveWeaponPayload;
+import net.kaupenjoe.tutorialmod.networking.Payload.UseCursedTechniquePayload;
 import net.kaupenjoe.tutorialmod.util.*;
+import net.kaupenjoe.tutorialmod.util.ActionContext.ActionContext;
+import net.kaupenjoe.tutorialmod.util.ActionContext.ActionTypes;
+import net.kaupenjoe.tutorialmod.util.ActionManager;
+import net.kaupenjoe.tutorialmod.util.Context.CursedTechniqueContext;
+import net.kaupenjoe.tutorialmod.util.Context.GiveWeaponContext;
+import net.kaupenjoe.tutorialmod.util.Context.GiveWeaponContextBuilder;
+import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -246,6 +256,10 @@ public class TutorialMod implements ModInitializer {
 		ModItems.registerModItems();
 		ModItemGroups.registerItemGroups();
 		ActionManager.registerActions(actions);
+		System.out.println("HERE");
+
+
+		System.out.println("DID I GET HERE??? PLEASE TELL ME");
 
 		ENTITY_AC.put(EntityType.PIG,5);
 		ENTITY_AC.put(EntityType.PIGLIN,10);
@@ -260,7 +274,10 @@ public class TutorialMod implements ModInitializer {
 				(payload,context)->{
 					ServerPlayerEntity player = context.player();
 
+					System.out.println("Action Payload");
 					context.server().execute(() -> {
+
+						System.out.println("Got to the Server Execute");
 //						ActionContext ctx = new ActionContext(player,context.server(),payload.data());
 //
 //						Consumer<ActionContext> action = actions.get(payload.action());
@@ -275,13 +292,20 @@ public class TutorialMod implements ModInitializer {
 				(payload,context)->{
 					ServerPlayerEntity player = context.player();
 
+					System.out.println("Give Weapon Payload");
 					context.server().execute(() -> {
+
+						System.out.println("Got to the Server Execute");
 						GiveWeaponContext ctx = new GiveWeaponContextBuilder(player,context.server(),payload.weapon()).build();
+						System.out.println("Got Berfore the Give Weapon function");
 //						Consumer<ActionContext> action = actions.get(payload.action());
+
+						System.out.println("Got to the Give Weapon Function");
 
 						WeaponsTypes weapon = ctx.getWeapon();
 						ItemStack itemStack = new ItemStack(weapon.getWeapon());
 
+						System.out.println("What is the Weapon? Oh its a: "+weapon.getWeapon().getName().toString());
 						player.giveItemStack(itemStack);
 						player.closeHandledScreen();
 //						GiveWeaponPayload;
@@ -289,6 +313,7 @@ public class TutorialMod implements ModInitializer {
 				});
 		ServerPlayNetworking.registerGlobalReceiver(UseCursedTechniquePayload.ID,
 				((payload, context) -> {
+					System.out.println("Here I am Using my CT");
 					DNDCharacter plrChar = getPlrCharacter(context.player());
 					CursedTechnique CT = plrChar.getCT();
 
@@ -307,11 +332,21 @@ public class TutorialMod implements ModInitializer {
 
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(CommandManager.literal("CT")
-					.executes(context -> {
-						DNDCharacter plrChar = getPlrCharacter(context.getSource());
-						plrChar.setCT(new WeaponCreatorCT());
-						return 1;
-					})
+					.then(CommandManager.argument("player", EntityArgumentType.player())
+							.executes(context -> {
+
+
+								UUID plrUUID = context.getSource().getPlayer().getUuid();
+								DNDCharacter plrChar = getPlrCharacter(context.getSource());
+
+								plrChar.setCT(new WeaponCreatorCT());
+
+								PLAYER_CHARACTERS.put(plrUUID,plrChar);
+
+
+
+								return 1;
+							}))
 			);
 			dispatcher.register(CommandManager.literal("levelup")
 					.executes(context -> {

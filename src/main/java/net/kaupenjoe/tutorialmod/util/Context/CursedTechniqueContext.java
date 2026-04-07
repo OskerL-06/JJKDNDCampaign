@@ -1,4 +1,4 @@
-package net.kaupenjoe.tutorialmod.util;
+package net.kaupenjoe.tutorialmod.util.Context;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;

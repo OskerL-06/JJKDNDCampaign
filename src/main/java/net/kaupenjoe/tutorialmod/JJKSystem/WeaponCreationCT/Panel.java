@@ -1,15 +1,13 @@
-package net.kaupenjoe.tutorialmod;
+package net.kaupenjoe.tutorialmod.JJKSystem.WeaponCreationCT;
 
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.screen.Screen;
 
 public class Panel {
-    int x,y,width, height;
-    int padding = 10;
-    int columns = 4;
-    int spacing = 20;
-    int totalWidth = columns*spacing;
+    public int x,y,width, height;
+    public int padding = 10;
+    public int columns = 4;
+    public int spacing = 20;
+    public int totalWidth = columns*spacing;
 
     public Panel( int width, int height,int x, int y) {
         this.width = width;
@@ -25,7 +23,7 @@ public class Panel {
         y = (moddedScreen.height-height)/2;
     }
 
-    void updatePanel(Screen moddedScreen){
+    public void updatePanel(Screen moddedScreen){
         int checkX = (moddedScreen.width-width)/2;
         int checkY = (moddedScreen.height-height)/2;
         if(x!=checkX||y!=checkY){

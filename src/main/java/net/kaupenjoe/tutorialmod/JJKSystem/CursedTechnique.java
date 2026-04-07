@@ -1,9 +1,6 @@
 package net.kaupenjoe.tutorialmod.JJKSystem;
 
-import net.kaupenjoe.tutorialmod.util.CursedTechniqueContext;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.entity.player.PlayerInventory;
-
+import net.kaupenjoe.tutorialmod.util.Context.CursedTechniqueContext;
 
 
 public abstract class CursedTechnique {

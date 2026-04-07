@@ -1,12 +1,13 @@
-package net.kaupenjoe.tutorialmod.JJKSystem;
+package net.kaupenjoe.tutorialmod.JJKSystem.WeaponCreationCT;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.fabricmc.loader.api.FabricLoader;
-import net.kaupenjoe.tutorialmod.util.CursedTechniqueContext;
-import net.kaupenjoe.tutorialmod.util.UseCursedTechniquePayload;
+import net.kaupenjoe.tutorialmod.JJKSystem.CTs;
+import net.kaupenjoe.tutorialmod.JJKSystem.CursedTechnique;
+import net.kaupenjoe.tutorialmod.util.Context.CursedTechniqueContext;
+import net.kaupenjoe.tutorialmod.networking.Payload.UseCursedTechniquePayload;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-public class WeaponCreatorCT extends CursedTechnique{
+public class WeaponCreatorCT extends CursedTechnique {
     CTs CTEnum = CTs.Weapon_Creation;
 
     @Override

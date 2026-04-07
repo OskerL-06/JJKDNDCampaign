@@ -1,7 +1,5 @@
-package net.kaupenjoe.tutorialmod.util;
+package net.kaupenjoe.tutorialmod.util.ActionContext;
 
-import net.kaupenjoe.tutorialmod.WeaponsTypes;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 

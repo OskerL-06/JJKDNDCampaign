@@ -1,10 +1,9 @@
-package net.kaupenjoe.tutorialmod.util;
+package net.kaupenjoe.tutorialmod.networking.Payload;
 
 import net.kaupenjoe.tutorialmod.TutorialMod;
 import net.kaupenjoe.tutorialmod.WeaponsTypes;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 

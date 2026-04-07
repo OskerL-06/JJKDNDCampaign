@@ -4,6 +4,9 @@ import net.kaupenjoe.tutorialmod.Player.DNDCharacter;
 import net.kaupenjoe.tutorialmod.Player.Stats;
 import net.kaupenjoe.tutorialmod.WeaponsTypes;
 import net.kaupenjoe.tutorialmod.item.ModItems;
+import net.kaupenjoe.tutorialmod.util.ActionContext.ActionContext;
+import net.kaupenjoe.tutorialmod.util.ActionContext.ActionTypes;
+import net.kaupenjoe.tutorialmod.util.Context.GiveWeaponContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -18,6 +21,7 @@ import static net.kaupenjoe.tutorialmod.TutorialMod.PLAYER_CHARACTERS;
 public class ActionManager {
     public static void registerActions(Map<ActionTypes, Consumer<ActionContext>> action){
         action.put(ActionTypes.GIVE_WEAPON, context -> {
+            System.out.println("Got to the Lambda");
             giveWeapon((GiveWeaponContext) context);
         });
     }
@@ -30,6 +34,8 @@ public class ActionManager {
 
     private static void giveWeapon(GiveWeaponContext  context){
 //        String weapon = context.getData();
+        System.out.println("Got to the Function");
+
         WeaponsTypes weapon = context.getWeapon();
         switch (weapon){
             case CURSED_SWORD ->  {
@@ -49,6 +55,7 @@ public class ActionManager {
         }
         return plrCharacter.getStats();
     }
+
     private static DNDCharacter getPlrCharacter(PlayerEntity player){
         UUID uuid = Objects.requireNonNull(player).getUuid();
         DNDCharacter plrCharacter = PLAYER_CHARACTERS.get(uuid);
