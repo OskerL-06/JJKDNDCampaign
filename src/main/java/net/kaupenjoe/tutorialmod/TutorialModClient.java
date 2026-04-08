@@ -2,7 +2,8 @@ package net.kaupenjoe.tutorialmod;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.kaupenjoe.tutorialmod.JJKSystem.WeaponCreationCT.ModdedScreen;
+import net.kaupenjoe.tutorialmod.JJKSystem.CTs;
+import net.kaupenjoe.tutorialmod.JJKSystem.SDSCT.java.ModdedScreen;
 import net.kaupenjoe.tutorialmod.networking.Payload.UseCursedTechniquePayload;
 import net.minecraft.client.MinecraftClient;
 
@@ -21,7 +22,7 @@ public class TutorialModClient implements ClientModInitializer {
 
     }
     public static void useCT(){
-        ClientPlayNetworking.send(new UseCursedTechniquePayload());
+        ClientPlayNetworking.send(new UseCursedTechniquePayload(CTs.Seven_Deadly_Sins));
     }
     @Override
     public void onInitializeClient() {

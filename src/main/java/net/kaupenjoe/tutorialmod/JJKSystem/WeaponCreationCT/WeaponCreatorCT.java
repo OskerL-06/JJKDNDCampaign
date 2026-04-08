@@ -18,6 +18,6 @@ public class WeaponCreatorCT extends CursedTechnique {
 
     @Override
     public void activate(CursedTechniqueContext context) {
-        ServerPlayNetworking.send(context.getPlayer(), new UseCursedTechniquePayload());
+        ServerPlayNetworking.send(context.getPlayer(), new UseCursedTechniquePayload(CTEnum));
     }
 }

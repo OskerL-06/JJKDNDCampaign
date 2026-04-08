@@ -1,26 +1,22 @@
 package net.kaupenjoe.tutorialmod.JJKSystem.WeaponCreationCT;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.kaupenjoe.tutorialmod.ClickableItem;
-import net.kaupenjoe.tutorialmod.JJKSystem.WeaponCreationCT.Panel;
+import net.kaupenjoe.tutorialmod.JJKSystem.SDSCT.java.Panel;
 import net.kaupenjoe.tutorialmod.TutorialMod;
 import net.kaupenjoe.tutorialmod.WeaponsTypes;
-import net.kaupenjoe.tutorialmod.item.ModItems;
 import net.kaupenjoe.tutorialmod.networking.Payload.GiveWeaponPayload;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static net.kaupenjoe.tutorialmod.TutorialMod.actions;
 
 public class ModdedScreen extends Screen {
     public static final Identifier GIVE_WEAPON = Identifier.of(TutorialMod.MOD_ID,"give_weapon");
@@ -29,7 +25,7 @@ public class ModdedScreen extends Screen {
             WeaponsTypes.CURSED_SWORD,
             WeaponsTypes.DIAMOND_SWORD
      );
-    public Panel panel;
+    public net.kaupenjoe.tutorialmod.JJKSystem.SDSCT.java.Panel panel;
 
 
 
@@ -83,13 +79,14 @@ public class ModdedScreen extends Screen {
 
             int x = (panel.padding+panel.x)+((i%panel.columns)* (item.size+ panel.spacing));
             int y = (panel.padding+panel.y)+((i/ panel.columns)* (item.size+ panel.spacing));
-
+            ClientPlayerEntity plr = MinecraftClient.getInstance().player;
             context.drawItem(item.stack,x,y);
             if(item.isOver(mouseX,mouseY,x,y)){
                 context.fill(x,y,x+item.size,y+item.size,0x80FFFFFF);
                 context.drawTooltip(
                         textRenderer,
                         item.stack.getName(),
+
                         mouseX,
                         mouseY
                 );

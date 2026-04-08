@@ -318,9 +318,12 @@ public class TutorialMod implements ModInitializer {
 					CursedTechnique CT = plrChar.getCT();
 
 					CursedTechniqueContext cursedTechniqueContext = new CursedTechniqueContext(context.player(),context.server());
-					if (CT!=null){
-						CT.activate(cursedTechniqueContext);
-					}
+//					if (CT!=null){
+//						CT.activate(cursedTechniqueContext);
+//					}
+					CursedTechnique THECT = payload.CursedTechnique().getCT(payload.CursedTechnique());
+
+					THECT.activate(cursedTechniqueContext);
 				})
 			);
 
