@@ -7,6 +7,7 @@ public abstract class CursedTechnique {
     int baseCE;
     CTs CTEnum;
 
+
     public abstract void onUse(CursedTechniqueContext context);
 
     public abstract void activate(CursedTechniqueContext context);

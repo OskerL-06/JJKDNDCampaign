@@ -3,7 +3,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.kaupenjoe.tutorialmod.JJKSystem.CTs;
-import net.kaupenjoe.tutorialmod.JJKSystem.SDSCT.java.ModdedScreen;
+import net.kaupenjoe.tutorialmod.JJKSystem.SDSCT.java.SDSModdedScreen;
 import net.kaupenjoe.tutorialmod.networking.Payload.UseCursedTechniquePayload;
 import net.minecraft.client.MinecraftClient;
 
@@ -16,7 +16,7 @@ import org.lwjgl.glfw.GLFW;
 public class TutorialModClient implements ClientModInitializer {
 
     public static void openScreen(){
-        MinecraftClient.getInstance().setScreen(new ModdedScreen(Text.of("Weapon")));
+        MinecraftClient.getInstance().setScreen(new SDSModdedScreen(Text.of("Weapon")));
 
         System.out.println("Got to the Open Screen Function");
 

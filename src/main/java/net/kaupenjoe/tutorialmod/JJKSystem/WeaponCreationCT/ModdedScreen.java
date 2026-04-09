@@ -2,7 +2,6 @@ package net.kaupenjoe.tutorialmod.JJKSystem.WeaponCreationCT;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.kaupenjoe.tutorialmod.ClickableItem;
-import net.kaupenjoe.tutorialmod.JJKSystem.SDSCT.java.Panel;
 import net.kaupenjoe.tutorialmod.TutorialMod;
 import net.kaupenjoe.tutorialmod.WeaponsTypes;
 import net.kaupenjoe.tutorialmod.networking.Payload.GiveWeaponPayload;
@@ -25,7 +24,7 @@ public class ModdedScreen extends Screen {
             WeaponsTypes.CURSED_SWORD,
             WeaponsTypes.DIAMOND_SWORD
      );
-    public net.kaupenjoe.tutorialmod.JJKSystem.SDSCT.java.Panel panel;
+    public Panel panel;
 
 
 

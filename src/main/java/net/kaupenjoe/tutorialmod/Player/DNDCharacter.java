@@ -30,6 +30,7 @@ public class DNDCharacter {
     }
 
     public void setCT(CursedTechnique CT) {
+        System.out.println("CT set to"+CT.);
         this.CT = CT;
     }
 

@@ -2,21 +2,21 @@ package net.kaupenjoe.tutorialmod.JJKSystem.SDSCT.java;
 
 import net.minecraft.client.gui.screen.Screen;
 
-public class Panel {
+public class SDSPanel {
     public int x,y,width, height;
     public int padding = 10;
     public int columns = 4;
     public int spacing = 20;
     public int totalWidth = columns*spacing;
 
-    public Panel( int width, int height,int x, int y) {
+    public SDSPanel(int width, int height, int x, int y) {
         this.width = width;
         this.height = height;
         this.x = x;
         this.y = y;
     }
 
-    public Panel(int width, int height, Screen moddedScreen) {
+    public SDSPanel(int width, int height, Screen moddedScreen) {
         this.width = width;
         this.height = height;
         x = (moddedScreen.width-width)/2;

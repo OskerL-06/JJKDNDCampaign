@@ -1,15 +1,20 @@
 package net.kaupenjoe.tutorialmod;
 
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.ModInitializer;
 
+import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.kaupenjoe.tutorialmod.DnDSystem.Dice;
 import net.kaupenjoe.tutorialmod.DnDSystem.Weapon;
 import net.kaupenjoe.tutorialmod.DnDSystem.Weapons;
+import net.kaupenjoe.tutorialmod.JJKSystem.CTs;
 import net.kaupenjoe.tutorialmod.JJKSystem.CursedTechnique;
 import net.kaupenjoe.tutorialmod.JJKSystem.WeaponCreationCT.WeaponCreatorCT;
 import net.kaupenjoe.tutorialmod.Player.DNDCharacter;
@@ -27,6 +32,7 @@ import net.kaupenjoe.tutorialmod.util.Context.CursedTechniqueContext;
 import net.kaupenjoe.tutorialmod.util.Context.GiveWeaponContext;
 import net.kaupenjoe.tutorialmod.util.Context.GiveWeaponContextBuilder;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.command.argument.EnumArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -231,9 +237,6 @@ public class TutorialMod implements ModInitializer {
 	}
 
 
-
-
-
 	@Override
 	public void onInitialize() {
 		PayloadTypeRegistry.playC2S().register(
@@ -261,9 +264,9 @@ public class TutorialMod implements ModInitializer {
 
 		System.out.println("DID I GET HERE??? PLEASE TELL ME");
 
-		ENTITY_AC.put(EntityType.PIG,5);
-		ENTITY_AC.put(EntityType.PIGLIN,10);
-		ENTITY_AC.put(EntityType.PIGLIN_BRUTE,13);
+		ENTITY_AC.put(EntityType.PIG, 5);
+		ENTITY_AC.put(EntityType.PIGLIN, 10);
+		ENTITY_AC.put(EntityType.PIGLIN_BRUTE, 13);
 
 //		actions.put(ActionTypes.GIVE_WEAPON, context -> {
 //			giveWeapon(context);
@@ -271,7 +274,7 @@ public class TutorialMod implements ModInitializer {
 
 
 		ServerPlayNetworking.registerGlobalReceiver(ActionPayload.ID,
-				(payload,context)->{
+				(payload, context) -> {
 					ServerPlayerEntity player = context.player();
 
 					System.out.println("Action Payload");
@@ -289,14 +292,14 @@ public class TutorialMod implements ModInitializer {
 					});
 				});
 		ServerPlayNetworking.registerGlobalReceiver(GiveWeaponPayload.ID,
-				(payload,context)->{
+				(payload, context) -> {
 					ServerPlayerEntity player = context.player();
 
 					System.out.println("Give Weapon Payload");
 					context.server().execute(() -> {
 
 						System.out.println("Got to the Server Execute");
-						GiveWeaponContext ctx = new GiveWeaponContextBuilder(player,context.server(),payload.weapon()).build();
+						GiveWeaponContext ctx = new GiveWeaponContextBuilder(player, context.server(), payload.weapon()).build();
 						System.out.println("Got Berfore the Give Weapon function");
 //						Consumer<ActionContext> action = actions.get(payload.action());
 
@@ -305,7 +308,7 @@ public class TutorialMod implements ModInitializer {
 						WeaponsTypes weapon = ctx.getWeapon();
 						ItemStack itemStack = new ItemStack(weapon.getWeapon());
 
-						System.out.println("What is the Weapon? Oh its a: "+weapon.getWeapon().getName().toString());
+						System.out.println("What is the Weapon? Oh its a: " + weapon.getWeapon().getName().toString());
 						player.giveItemStack(itemStack);
 						player.closeHandledScreen();
 //						GiveWeaponPayload;
@@ -317,39 +320,41 @@ public class TutorialMod implements ModInitializer {
 					DNDCharacter plrChar = getPlrCharacter(context.player());
 					CursedTechnique CT = plrChar.getCT();
 
-					CursedTechniqueContext cursedTechniqueContext = new CursedTechniqueContext(context.player(),context.server());
+					CursedTechniqueContext cursedTechniqueContext = new CursedTechniqueContext(context.player(), context.server());
 //					if (CT!=null){
 //						CT.activate(cursedTechniqueContext);
 //					}
-					CursedTechnique THECT = payload.CursedTechnique().getCT(payload.CursedTechnique());
+					System.out.println(payload.CursedTechnique());
+//					CursedTechnique THECT = CTs.getCT(payload.CursedTechnique());
 
-					THECT.activate(cursedTechniqueContext);
+					CT.activate(cursedTechniqueContext);
 				})
-			);
+		);
 
 		AttackEntityCallback.EVENT.register(
 				(player, world, hand, entity, hitResult)
-						-> attack(player,entity,world)
-
-				);
-
+						-> attack(player, entity, world)
+		);
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(CommandManager.literal("CT")
-					.then(CommandManager.argument("player", EntityArgumentType.player())
-							.executes(context -> {
+					.then(CommandManager.literal("set")
+							.then(CommandManager.argument("player", EntityArgumentType.player())
+									.then(CommandManager.argument("Cursed Technique", StringArgumentType.string())
+											.executes(context -> {
+												String ct = StringArgumentType.getString(context, "Cursed Technique");
+												UUID plrUUID = context.getSource().getPlayer().getUuid();
+												DNDCharacter plrChar = getPlrCharacter(context.getSource());
+												CTs CT = switch (ct) {
+													case "Weapon" -> CTs.Weapon_Creation;
+													default -> CTs.Seven_Deadly_Sins;
+												};
+												System.out.println("You typed: " + ct + " that is " + CT);
 
+												plrChar.setCT(CTs.getCT(CT));
 
-								UUID plrUUID = context.getSource().getPlayer().getUuid();
-								DNDCharacter plrChar = getPlrCharacter(context.getSource());
-
-								plrChar.setCT(new WeaponCreatorCT());
-
-								PLAYER_CHARACTERS.put(plrUUID,plrChar);
-
-
-
-								return 1;
-							}))
+												PLAYER_CHARACTERS.put(plrUUID, plrChar);
+												return 1;
+											}))))
 			);
 			dispatcher.register(CommandManager.literal("levelup")
 					.executes(context -> {
@@ -363,9 +368,9 @@ public class TutorialMod implements ModInitializer {
 						Stats plrStats = getPlrStats(context);
 						ServerPlayerEntity player = context.getSource().getPlayer();
 						int baseHP = plrStats.getMaxHP();
-						int HP = baseHP > 0? baseHP:  plrStats.calculateMaxHp();
-                           assert player != null;
-                           TutorialMod.applyMaxHP(player,HP);
+						int HP = baseHP > 0 ? baseHP : plrStats.calculateMaxHp();
+						assert player != null;
+						TutorialMod.applyMaxHP(player, HP);
 						player.sendMessage(
 								Text.of("HP set to" + HP)
 						);
@@ -373,113 +378,113 @@ public class TutorialMod implements ModInitializer {
 					})
 			);
 			dispatcher.register(CommandManager.literal("roll")
-				.then(CommandManager.literal("attack")
-					.executes(context -> {
-							int roll = doRoll(context,"strength","Attack Roll: ");
-							ServerCommandSource source = context.getSource();
-
-							source.sendFeedback(()->Text.literal("Attempting to attack Osker. Their AC is 13"),false);
-
-							source.sendFeedback(()->Text.literal("You got "+roll),false);
-
-							if(roll>=12){
-								source.sendFeedback(
-										()->Text.literal("You hit Osker dealing "+ (roll+2)+ " damage"),
-										false
-								);
-							}else{
-								source.sendFeedback(
-										()->Text.literal("You miss"),
-										false
-								);
-							}
-
-							return 1;
-					})
-				)
-				.then(CommandManager.literal("skill")
-						.executes(context -> {
-
-						int roll = doRoll(context, "strength","Skill Check: ");
-						context.getSource().sendFeedback(
-								()-> Text.literal("You got "+roll),false);
-						return 1;
-					})
-				)
-			);
-		dispatcher.register(CommandManager.literal("stat")
-			.then(CommandManager.literal("strength")
-				.then(CommandManager.literal("set")
-					.then(CommandManager.argument("amount",IntegerArgumentType.integer(0,20))
+					.then(CommandManager.literal("attack")
 							.executes(context -> {
-								int Amount = IntegerArgumentType.getInteger(context,"amount");
-								setStat(context, Stats.StatType.STRENGTH,Amount);
-								context.getSource().sendFeedback(
-										() -> Text.literal("You have set your strength to " + Amount ),
-										false
-								);
-								return 1;
-							}))
-					)
-					.then(CommandManager.literal("get")
-							.executes(context -> {
-								context.getSource().sendFeedback(
-										() -> Text.literal("Your strength is " + getStat(context, Stats.StatType.STRENGTH)),
-										false
-								);
-								return 1;
-							}))
-				)
-					.then(CommandManager.literal("constitution")
-						.then(CommandManager.literal("set")
+								int roll = doRoll(context, "strength", "Attack Roll: ");
+								ServerCommandSource source = context.getSource();
 
-							.then(CommandManager.argument("amount",IntegerArgumentType.integer(0,20))
-								.executes(context -> {
-									int Amount = IntegerArgumentType.getInteger(context,"amount");
+								source.sendFeedback(() -> Text.literal("Attempting to attack Osker. Their AC is 13"), false);
 
-									setStat(context, Stats.StatType.CONSTITUTION,Amount);
-										context.getSource().sendFeedback(
-											() -> Text.literal("You have set your constitution to " + Amount ),
+								source.sendFeedback(() -> Text.literal("You got " + roll), false);
+
+								if (roll >= 12) {
+									source.sendFeedback(
+											() -> Text.literal("You hit Osker dealing " + (roll + 2) + " damage"),
 											false
-											);
-											return 1;
-										}))
-								)
-							.then(CommandManager.literal("get")
-							 .executes(context -> {
+									);
+								} else {
+									source.sendFeedback(
+											() -> Text.literal("You miss"),
+											false
+									);
+								}
+
+								return 1;
+							})
+					)
+					.then(CommandManager.literal("skill")
+							.executes(context -> {
+
+								int roll = doRoll(context, "strength", "Skill Check: ");
+								context.getSource().sendFeedback(
+										() -> Text.literal("You got " + roll), false);
+								return 1;
+							})
+					)
+			);
+			dispatcher.register(CommandManager.literal("stat")
+					.then(CommandManager.literal("strength")
+							.then(CommandManager.literal("set")
+									.then(CommandManager.argument("amount", IntegerArgumentType.integer(0, 20))
+											.executes(context -> {
+												int Amount = IntegerArgumentType.getInteger(context, "amount");
+												setStat(context, Stats.StatType.STRENGTH, Amount);
 												context.getSource().sendFeedback(
-														() -> Text.literal("Your constitution is " + getStat(context, Stats.StatType.CONSTITUTION)),
+														() -> Text.literal("You have set your strength to " + Amount),
 														false
 												);
 												return 1;
 											}))
+							)
+							.then(CommandManager.literal("get")
+									.executes(context -> {
+										context.getSource().sendFeedback(
+												() -> Text.literal("Your strength is " + getStat(context, Stats.StatType.STRENGTH)),
+												false
+										);
+										return 1;
+									}))
+					)
+					.then(CommandManager.literal("constitution")
+							.then(CommandManager.literal("set")
 
-				).then(CommandManager.literal("level")
-						.then(CommandManager.literal("set")
+									.then(CommandManager.argument("amount", IntegerArgumentType.integer(0, 20))
+											.executes(context -> {
+												int Amount = IntegerArgumentType.getInteger(context, "amount");
 
-								.then(CommandManager.argument("amount",IntegerArgumentType.integer(0,20))
-										.executes(context -> {
-											int Amount = IntegerArgumentType.getInteger(context,"amount");
+												setStat(context, Stats.StatType.CONSTITUTION, Amount);
+												context.getSource().sendFeedback(
+														() -> Text.literal("You have set your constitution to " + Amount),
+														false
+												);
+												return 1;
+											}))
+							)
+							.then(CommandManager.literal("get")
+									.executes(context -> {
+										context.getSource().sendFeedback(
+												() -> Text.literal("Your constitution is " + getStat(context, Stats.StatType.CONSTITUTION)),
+												false
+										);
+										return 1;
+									}))
 
-											setStat(context, Stats.StatType.LEVEL,Amount);
-											context.getSource().sendFeedback(
-													() -> Text.literal("You have set your Level to " + Amount ),
-													false
-											);
-											return 1;
-										}))
-						)
-						.then(CommandManager.literal("get")
-								.executes(context -> {
-									context.getSource().sendFeedback(
-											() -> Text.literal("Your Level is " + getStat(context, Stats.StatType.LEVEL)),
-											false
-									);
-									return 1;
-								}))
+					).then(CommandManager.literal("level")
+							.then(CommandManager.literal("set")
 
-				)
-		);
+									.then(CommandManager.argument("amount", IntegerArgumentType.integer(0, 20))
+											.executes(context -> {
+												int Amount = IntegerArgumentType.getInteger(context, "amount");
+
+												setStat(context, Stats.StatType.LEVEL, Amount);
+												context.getSource().sendFeedback(
+														() -> Text.literal("You have set your Level to " + Amount),
+														false
+												);
+												return 1;
+											}))
+							)
+							.then(CommandManager.literal("get")
+									.executes(context -> {
+										context.getSource().sendFeedback(
+												() -> Text.literal("Your Level is " + getStat(context, Stats.StatType.LEVEL)),
+												false
+										);
+										return 1;
+									}))
+
+					)
+			);
 		});
 	}
 }

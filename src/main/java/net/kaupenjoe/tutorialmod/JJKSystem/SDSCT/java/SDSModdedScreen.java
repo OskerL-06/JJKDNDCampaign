@@ -5,7 +5,6 @@ import net.kaupenjoe.tutorialmod.ClickableItem;
 import net.kaupenjoe.tutorialmod.JJKSystem.CTs;
 import net.kaupenjoe.tutorialmod.JJKSystem.WeaponCreationCT.Panel;
 import net.kaupenjoe.tutorialmod.TutorialMod;
-import net.kaupenjoe.tutorialmod.networking.Payload.GiveWeaponPayload;
 import net.kaupenjoe.tutorialmod.networking.Payload.UseCursedTechniquePayload;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -15,7 +14,7 @@ import net.minecraft.util.Identifier;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ModdedScreen extends Screen {
+public class SDSModdedScreen extends Screen {
     public static final Identifier GIVE_WEAPON = Identifier.of(TutorialMod.MOD_ID,"give_weapon");
     public static final List<ClickableItem> sins = new ArrayList<>();
     public Panel panel;
@@ -23,7 +22,7 @@ public class ModdedScreen extends Screen {
 
 
 
-    public ModdedScreen(Text title) {
+    public SDSModdedScreen(Text title) {
         super(title);
     }
 

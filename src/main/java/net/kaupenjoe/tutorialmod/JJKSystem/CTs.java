@@ -8,7 +8,7 @@ public enum CTs {
     Seven_Deadly_Sins,
     ;
 
-    public CursedTechnique getCT(CTs ct){
+    public static CursedTechnique getCT(CTs ct){
         return switch (ct){
             case Weapon_Creation -> new WeaponCreatorCT();
             case Seven_Deadly_Sins -> new SevenDeadlySins();
